@@ -33,7 +33,7 @@ public class FileLog extends Log {
 		writer = new FileWriter( file, true );
 	}
 	
-	static private boolean createFile( File f ) throws IOException {
+	private boolean createFile( File f ) throws IOException {
 		File parentFile = f.getParentFile();
 		if( parentFile.exists() || parentFile.mkdirs() ) {
 			return f.createNewFile();

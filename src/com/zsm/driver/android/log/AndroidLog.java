@@ -2,6 +2,7 @@ package com.zsm.driver.android.log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import com.zsm.log.DummyReader;
@@ -22,13 +23,14 @@ public class AndroidLog extends Log {
 	@Override
 	public BufferedReader createReader() throws IOException {
 		try {
-			  Process process = Runtime.getRuntime().exec("logcat -d");
-			  BufferedReader bufferedReader
-			  	= new BufferedReader(
-			  			new InputStreamReader(process.getInputStream()));
+			Process process = Runtime.getRuntime().exec("logcat -d");
+			InputStream inputStream = process.getInputStream();
+			BufferedReader bufferedReader
+				= new BufferedReader(new InputStreamReader(inputStream));
 			  
 			  return bufferedReader;
 		} catch (IOException e) {
+			e.printStackTrace();
 			Log.e( e );
 			return new DummyReader();
 		}

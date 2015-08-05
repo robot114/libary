@@ -1,5 +1,7 @@
 <resources>
 
     <string name="app_name">ZsmLib</string>
-
+    <string name="menuLogClear">Clear</string>
+    <string name="menuLogShow">Log channel</string>
+    
 </resources>

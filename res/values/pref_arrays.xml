@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="prefLogLevelEntries">
+        <item >DEBUG</item>
+        <item >INFO</item>
+        <item >WARNING</item>
+        <item >ERROR</item>
+        <item >NONE</item>
+    </string-array>
+    
+    <string-array name="prefLogChannelsEntries">
+        <item >To Android System Log(Always open)</item>
+        <item >To a File</item>
+    </string-array>
+    
+    <string-array name="prefLogChannelsValues">
+        <item >AndroidLog</item>
+        <item >FileLog</item>
+    </string-array>
+</resources>

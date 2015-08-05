@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="logBackground">#F8F8F8</color>
+    <color name="logFoundBackground">#B0B0FF</color>
+    
+    <string name="searchLogsForward">Search forward</string>
+    <string name="searchLogsBackword">Search Backward</string>
+    <string name="searchLogToEnd">Reach to the end,\r\nwould you want to from the beginning?</string>
+    <string name="searchLogToBegin">Reach to the beginning,\r\nwould you want to from the end?</string>
+    <string name="searchLogNoFound">Target string not found!</string>
+    <string name="prefAdvancedForDev">Advanced Settings</string>
+    <string name="prefAdvancedForDevDesc">Advanced settings. It is only for the developers.</string>
+    <string name="prefAdvancedLogLevel">Log Level</string>
+    <string name="prefAdvancedLogLevelDesc">The lowest level of the log to be recorded.</string>
+    <string name="prefAdvancedLogChannels">Log channels</string>
+    <string name="prefAdvancedLogChannelsDesc">Channels to which the logs will be sent. The Android channel will always opened, even it is not selected here. The change will take affect after the app restart.</string>
+</resources>
