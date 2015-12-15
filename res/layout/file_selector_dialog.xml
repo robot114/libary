@@ -1,32 +1,39 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/saveFileDialog"
+    android:id="@+id/fileDialogLayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:minHeight="10000dp"
+    android:minWidth="10000dp"
     android:orientation="vertical" >
+
     <ListView
         android:id="@+id/fileList"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.5"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:padding="10dp" />
-    <ScrollView 
-       		android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-	        android:layout_weight="0.5">
-	    <LinearLayout
-	        android:id="@+id/fileLinearLayout2"
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0" >
+
+	    <LinearLayout
+	        android:id="@+id/fileLinearLayout"
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
 	        android:orientation="vertical"
 	        android:padding="10dp" >
 	
 	        <TextView
-	            android:id="@+id/fileTextView1"
+	            android:id="@+id/fileTextView"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
+	            android:labelFor="@+id/fileName"
 	            android:padding="10dp"
 	            android:text="@string/enterFileName"
 	            android:textAppearance="?android:attr/textAppearanceMedium" />
+
 	        <EditText
 	            android:id="@+id/fileName"
 	            android:layout_width="fill_parent"
@@ -39,13 +46,16 @@
 	            android:layout_width="fill_parent"
 	            android:layout_height="wrap_content"
 	            android:orientation="horizontal" >
+
 	            <Button
 	                android:id="@+id/fileSaveLoad"
 	                android:layout_width="fill_parent"
 	                android:layout_height="wrap_content"
+	                android:layout_gravity="top"
 	                android:layout_weight="1"
 	                android:padding="10dp"
 	                android:text="@string/saveButtonText" />
+
 	            <Button
 	                android:id="@+id/fileCancel"
 	                android:layout_width="fill_parent"

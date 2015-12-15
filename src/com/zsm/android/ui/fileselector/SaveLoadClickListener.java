@@ -19,8 +19,8 @@ public class SaveLoadClickListener implements OnClickListener {
 	/** Performed operation. */
 	private final FileOperation mOperation;
 
-	/** FileSelector in which you used SaveLoadClickListener */
-	private final FileSelector mFileSelector;
+	/** FileFragment in which you used SaveLoadClickListener */
+	private final FileDialogFragment mFileFragment;
 
 	private final Context mContext;
 
@@ -33,18 +33,18 @@ public class SaveLoadClickListener implements OnClickListener {
 	 *            context.
 	 */
 	public SaveLoadClickListener(final FileOperation operation,
-								 final FileSelector fileSelector,
+								 final FileDialogFragment fileFragment,
 								 final Context context) {
 		mOperation = operation;
-		mFileSelector = fileSelector;
+		mFileFragment = fileFragment;
 		mContext = context;
 	}
 
 	@Override
 	public void onClick(final View view) {
-		final String text = mFileSelector.getSelectedFileName();
+		final String text = mFileFragment.getSelectedFileName();
 		final String filePath
-			= mFileSelector.getCurrentLocation().getAbsolutePath()
+			= mFileFragment.getCurrentLocation().getAbsolutePath()
 				+ File.separator + text;
 		
 		final File file = new File(filePath);
@@ -84,8 +84,8 @@ public class SaveLoadClickListener implements OnClickListener {
 			t.show();
 		} else {
 			// Access granted.
-			mFileSelector.mOnHandleFileListener.handleFile(mOperation, filePath);
-			mFileSelector.dismiss();
+			mFileFragment.handleFile(mOperation, filePath);
+			mFileFragment.dismiss();
 		}
 	}
 
