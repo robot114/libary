@@ -25,4 +25,6 @@
     <string name="openPlayFileFirst">Open the file to be played first!</string>
     <string name="audioFileFilterDescription">Audio files</string>
     
+    <string name="emptyTime">00:00</string>
+    
 </resources>
