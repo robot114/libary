@@ -21,18 +21,51 @@ public class FileSelector {
 	 *            The current context.
 	 * @param operation
 	 *            LOAD - to load file / SAVE - to save file
+	 * @param currentPath
+	 * 			  The path where we start 
 	 * @param onHandleFileListener
 	 *            Notified after pressing the save or load button.
 	 * @param fileFilters
 	 *            Array with filters
 	 */
-	public FileSelector(final Activity activity, final FileOperation operation,
+	public FileSelector(final Activity activity, 
+						final FileOperation operation,
+						final String currentPath,
 						final OnHandleFileListener onHandleFileListener,
 						final FileExtensionFilter[] fileFilters) {
 		
 		dialog
-			= new FileDialogFragment(activity, "", operation, 
+			= new FileDialogFragment(activity, "", operation, currentPath, 
 									 onHandleFileListener, fileFilters);
+	}
+
+	/**
+	 * Constructor that creates the file selector dialog.
+	 * 
+	 * @param activity
+	 *            The current context.
+	 * @param operation
+	 *            LOAD - to load file / SAVE - to save file
+	 * @param currentPath
+	 * 			  The path where we start 
+	 * @param onHandleFileListener
+	 *            Notified after pressing the save or load button.
+	 * @param fileFilters
+	 *            Array with filters
+	 * @param withNameField
+	 * 			  Show the text field to input file name
+	 */
+	public FileSelector(final Activity activity,
+						final FileOperation operation,
+						final String currentPath,
+						final OnHandleFileListener onHandleFileListener,
+						final FileExtensionFilter[] fileFilters,
+						final boolean withNameField ) {
+		
+		dialog
+			= new FileDialogFragment(activity, "", operation, currentPath, 
+									 onHandleFileListener, fileFilters,
+									 true, withNameField );
 	}
 
 	public String getSelectedFileName() {

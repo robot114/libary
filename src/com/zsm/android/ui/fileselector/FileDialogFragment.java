@@ -55,6 +55,7 @@ public class FileDialogFragment extends DialogFragment {
 	private EditText textFileName;
 	private SaveLoadClickListener saveLoadClickListener;
 	private FragmentManager fragmentManager;
+	private boolean showFileName;
 
 	public FileDialogFragment() {
 		
@@ -62,27 +63,33 @@ public class FileDialogFragment extends DialogFragment {
 
 	public FileDialogFragment(Activity activity, String title,
 							  final FileOperation operation,
+							  final String currentPath,
 							  final OnHandleFileListener onHandleFileListener,
 							  final FileExtensionFilter[] filters,
-							  final boolean includeSubDir ) {
+							  final boolean includeSubDir,
+							  final boolean showFileName ) {
 
-		init(activity, title, operation, onHandleFileListener,
-			 filters, includeSubDir );
+		init(activity, title, operation, currentPath, onHandleFileListener,
+			 filters, includeSubDir, showFileName );
 	}
 
 	public FileDialogFragment(Activity activity, String title,
 							  final FileOperation operation,
+							  final String currentPath,
 							  final OnHandleFileListener onHandleFileListener,
 							  final FileExtensionFilter[] filters) {
 
-		init(activity, title, operation, onHandleFileListener, filters, true);
+		init(activity, title, operation, currentPath, onHandleFileListener,
+			 filters, true, true );
 	}
 
 	private void init(Activity activity, String title,
 					  final FileOperation operation,
+					  final String currentPath,
 					  final OnHandleFileListener onHandleFileListener,
 					  final FileExtensionFilter[] filters,
-					  final boolean includeSubDir) {
+					  final boolean includeSubDir,
+					  boolean showFileName) {
 		
 		fragmentManager = activity.getFragmentManager();
 		this.title = title;
@@ -92,28 +99,43 @@ public class FileDialogFragment extends DialogFragment {
 		this.onHandleFileListener = onHandleFileListener;
 		this.fileFilters = filters;
 
-		final File sdCard = Environment.getExternalStorageDirectory();
-		if (sdCard.canRead()) {
-			mCurrentLocation = sdCard;
-		} else {
-			mCurrentLocation = Environment.getRootDirectory();
+		try {
+			mCurrentLocation = new File( currentPath );
+		} catch ( Exception e ) {
 		}
+		
+		if( mCurrentLocation != null && !mCurrentLocation.isDirectory() ) {
+			mCurrentLocation = mCurrentLocation.getParentFile();
+		}
+		
+		if( mCurrentLocation == null || !mCurrentLocation.exists() ) {
+			final File sdCard = Environment.getExternalStorageDirectory();
+			if (sdCard.canRead()) {
+				mCurrentLocation = sdCard;
+			} else {
+				mCurrentLocation = Environment.getRootDirectory();
+			}
+		}
+		
 		saveLoadClickListener
 			= new SaveLoadClickListener(operation, this, getActivity());
+		this.showFileName = showFileName;
 	}
 
 	public FileDialogFragment( Activity activity, String title,
 							   final FileOperation operation,
+							   final String currentPath,
 							   final OnHandleFileListener onHandleFileListener,
 							   final String[] extensions,
 							   final String filterDescription,
-							   final boolean includeSubDir ) {
+							   final boolean includeSubDir,
+							   final boolean showFileName ) {
 
 		FileExtensionFilter ff
 			= new FileExtensionFilter( extensions, filterDescription );
 		
-		init( activity, title, operation, onHandleFileListener,
-			  new FileExtensionFilter[]{ ff }, includeSubDir );
+		init( activity, title, operation, currentPath, onHandleFileListener,
+			  new FileExtensionFilter[]{ ff }, includeSubDir, showFileName );
 	}
 	
     @Override
@@ -152,6 +174,10 @@ public class FileDialogFragment extends DialogFragment {
         	= inflater.inflate(R.layout.file_selector_dialog, container, false);
         
 		textFileName = (EditText) view.findViewById(R.id.fileName);
+		if( !showFileName ) {
+			textFileName.setVisibility( View.GONE );
+			view.findViewById(R.id.fileTextView).setVisibility( View.GONE );
+		}
 		
 		prepareFilterSpinner(view, fileFilters);
 		prepareFilesList(view);
@@ -330,6 +356,9 @@ public class FileDialogFragment extends DialogFragment {
 			makeList();
 		} else if (itemLocation.isFile()) {
 			textFileName.setText(itemText);
+			if( !showFileName && operation == FileOperation.LOAD ) {
+				saveLoadClickListener.onClick( mSaveLoadButton );
+			}
 		}
 	}
 

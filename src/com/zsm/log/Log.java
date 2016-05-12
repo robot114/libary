@@ -220,6 +220,9 @@ abstract public class Log {
 				if( buffer == null ) {
 					buffer = message( message, objects );
                 }
+				if( t != null && t.getMessage() != null ) {
+					buffer.append( t.getMessage() ).append( "\r\n" );
+				}
 		    	try {
 		    		e.getValue().print(t, buffer, level);
 		    	} catch ( Exception ex ) {
