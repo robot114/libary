@@ -43,7 +43,7 @@ public class SaveLoadClickListener implements OnClickListener {
 	@Override
 	public void onClick(final View view) {
 		final String text = mFileFragment.getSelectedFileName();
-		final String filePath
+		String filePath
 			= mFileFragment.getCurrentLocation().getAbsolutePath()
 				+ File.separator + text;
 		
@@ -63,30 +63,38 @@ public class SaveLoadClickListener implements OnClickListener {
 				if (!checkFileName(text)) {
 					return;
 				}
-				if (!file.exists()) {
-					messageText = R.string.missingFile;
-				} else if (!file.canRead()) {
-					messageText = R.string.accessDenied;
+				messageText = checkFileAndFolder(file);
+				if( messageText == 0 && !file.isFile() ) {
+					messageText = R.string.fileNeeded;
 				}
 				break;
 			case FOLDER:
-				if (!file.canRead()) {
-					messageText = R.string.accessDenied;
+				messageText = checkFileAndFolder(file);
+				if( messageText == 0 && !file.isDirectory() ) {
+					filePath = file.getParent();
 				}
 				break;
 			default:
 				throw new IllegalArgumentException( "Invalid operation: " + mOperation );
 		}
 		if (messageText != 0) {
-			// Access denied.
 			final Toast t = Toast.makeText(mContext, messageText, Toast.LENGTH_SHORT);
 			t.setGravity(Gravity.CENTER, 0, 0);
 			t.show();
 		} else {
-			// Access granted.
 			mFileFragment.handleFile(mOperation, filePath);
 			mFileFragment.dismiss();
 		}
+	}
+
+	private int checkFileAndFolder(final File file) {
+		int messageText = 0;
+		if (!file.exists()) {
+			messageText = R.string.missingFile;
+		} else if (!file.canRead()) {
+			messageText = R.string.accessDenied;
+		}
+		return messageText;
 	}
 
 	/**

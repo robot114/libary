@@ -118,7 +118,7 @@ public class FileDialogFragment extends DialogFragment {
 		}
 		
 		saveLoadClickListener
-			= new SaveLoadClickListener(operation, this, getActivity());
+			= new SaveLoadClickListener(operation, this, activity);
 		this.showFileName = showFileName;
 	}
 

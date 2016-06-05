@@ -40,6 +40,7 @@ public class PreferenceUtil {
 									  iconResId, summaryResId, null );
 		
 	}
+	
 	public static <E extends Enum<E>> ListPreference
 						extractEnumPreference( 
 								PreferenceFragment pf, String key,
@@ -57,7 +58,7 @@ public class PreferenceUtil {
 			p = (ListPreference) pf.findPreference(key);
 		}
 		if( p != null ) {
-			p.setDefaultValue(defaultValue);
+			p.setDefaultValue(defaultValue.name());
 			PreferenceChangeListener<E> l
 				= new PreferenceChangeListener<E>(
 							clazz, defaultValue, iconResId, summaryResId, action );
@@ -68,7 +69,13 @@ public class PreferenceUtil {
 				values[e.ordinal()] = e.name();
 			}
 			p.setEntryValues( values );
-			l.changePreference(p, p.getValue() );
+			String currentValue = p.getValue();
+			if( currentValue == null ) {
+				currentValue = defaultValue.name();
+				p.setValue(currentValue);
+			}
+			
+			l.changePreference(p, currentValue );
 		}
 		
 		return p;
