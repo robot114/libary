@@ -1,7 +1,9 @@
 package com.zsm.android.ui;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -18,13 +20,13 @@ public class Utility {
 	
 	/**
 	 * Get the TextView height before the TextView will render
-	 * @param textView the TextView to measure
+	 * @param view the TextView to measure
 	 * @return the height of the textView
 	 */
 	@SuppressWarnings("deprecation")
-	public static int getTextViewHeight(TextView textView) {
+	public static int getViewHeight(View view) {
 	    WindowManager wm =
-	            (WindowManager) textView.getContext().getSystemService(Context.WINDOW_SERVICE);
+	            (WindowManager) view.getContext().getSystemService(Context.WINDOW_SERVICE);
 	    Display display = wm.getDefaultDisplay();
 
 	    int deviceWidth;
@@ -39,8 +41,8 @@ public class Utility {
 
 	    int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(deviceWidth, View.MeasureSpec.AT_MOST);
 	    int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-	    textView.measure(widthMeasureSpec, heightMeasureSpec);
-	    return textView.getMeasuredHeight();
+	    view.measure(widthMeasureSpec, heightMeasureSpec);
+	    return view.getMeasuredHeight();
 	}
 	
 	public static int convertDpToPx(float dp, Context context ) {
@@ -50,4 +52,24 @@ public class Utility {
 	}
 	
 
+	public static Drawable getDrawableFromAttr( Context context, int attrId ) {
+		// Create an array of the attributes we want to resolve
+		// using values from a theme
+		int[] attrs = new int[] { attrId /* index 0 */};
+
+		// Obtain the styled attributes. 'context' is a context with a
+		// theme, typically the current Activity (i.e. 'this')
+		TypedArray ta = context.obtainStyledAttributes(attrs);
+
+		// To get the value of the 'attrId' attribute that was
+		// set in the theme used in 'context'. The parameter is the index
+		// of the attribute in the 'attrs' array. The returned Drawable
+		// is what you are after
+		Drawable drawableFromTheme = ta.getDrawable(0 /* index */);
+
+		// Finally, free the resources used by TypedArray
+		ta.recycle();
+		
+		return drawableFromTheme;
+	}
 }

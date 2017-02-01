@@ -3,4 +3,5 @@
     <declare-styleable name="ClearableEditor">
         <attr name="clearButtonOnRight" format="boolean"/>
     </declare-styleable>
+    
 </resources>
