@@ -8,17 +8,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class CheckableExpandableChildListAdapter<T extends ExpandableListChildGroup>
-				extends CheckableExpandableListAdapter<T> {
+public class CheckableExpandableChildTextListAdapter<T extends ExpandableTextListChildGroup>
+				extends CheckableExpandableTextListAdapter<T> {
 
 	private static final Object TAG_LABEL = new Object();
 	private static final Object TAG_CONTENT = new Object();
 
-	public CheckableExpandableChildListAdapter(Context context, boolean itemDuplicable) {
+	public CheckableExpandableChildTextListAdapter(Context context, boolean itemDuplicable) {
 		super(context, itemDuplicable);
 	}
 
-	public CheckableExpandableChildListAdapter(Context context) {
+	public CheckableExpandableChildTextListAdapter(Context context) {
 		super(context);
 	}
 	
@@ -58,7 +58,7 @@ public class CheckableExpandableChildListAdapter<T extends ExpandableListChildGr
 			String infService = Context.LAYOUT_INFLATER_SERVICE;
 			LayoutInflater li
 				= (LayoutInflater)mContext.getSystemService( infService );
-			convertView = li.inflate( R.layout.checkable_expandable_child_item, null);
+			convertView = li.inflate( R.layout.checkable_expandable_child_text_item, null);
 			
 			labelView = (TextView) convertView.findViewById( R.id.textViewLabel );
 			contentView = (TextView) convertView.findViewById( R.id.textViewContent );

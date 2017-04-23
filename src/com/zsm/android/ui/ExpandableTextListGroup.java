@@ -2,7 +2,7 @@ package com.zsm.android.ui;
 
 import android.content.Context;
 
-public interface ExpandableListGroup {
+public interface ExpandableTextListGroup {
 
 	String getShowString( Context context );
 	

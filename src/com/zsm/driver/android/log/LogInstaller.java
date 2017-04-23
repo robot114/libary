@@ -45,7 +45,7 @@ public class LogInstaller {
 	 */
 	static public void installFileLog( Context context, long maxFileLength ) {
 		if( LogPreferences.getInstance().isLogChannelOn(FILE_LOG) ) {
-			installFileLog( FILE_LOG, maxFileLength );
+			installFileLog( FILE_LOG, context.getDir( "log", 0 ).getPath(), maxFileLength );
 			installFileLogRetry( context, FILE_LOG, maxFileLength );
 			Log.setLevel(FILE_LOG, Log.LEVEL.DEBUG);
 		}
@@ -62,10 +62,10 @@ public class LogInstaller {
 		installFileLog( context, MAX_LOG_FILE_LENGTH );
 	}
 
-	static private void installFileLog(String id, long maxFileLength) {
+	static private void installFileLog(String id, String path, long maxFileLength) {
 		String logFileName
 			= Environment.getExternalStorageDirectory()
-				+ "/EncryptId/log/EncryptIt.log";
+				+ id + "/log/.log";
 		try {
 			Log.install( id, new FileLog( logFileName, maxFileLength ));
 		} catch (Exception e) {
@@ -79,7 +79,7 @@ public class LogInstaller {
 		if( !Log.isIinstalled(id) ) {
 			ContextWrapper cw = new ContextWrapper(context);
 			File directory = cw.getDir("log", Context.MODE_PRIVATE);
-			String logFileName = directory.getAbsolutePath() +"/EncryptIt.log";
+			String logFileName = directory.getAbsolutePath() +"/.log";
 			try {
 				Log.install( id, new FileLog( logFileName, maxFileLength ) );
 			} catch (Exception e) {

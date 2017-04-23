@@ -2,7 +2,7 @@ package com.zsm.android.ui;
 
 import android.content.Context;
 
-public interface ExpandableListChildGroup extends ExpandableListGroup {
+public interface ExpandableTextListChildGroup extends ExpandableTextListGroup {
 
 	int getChildrenCount();
 	

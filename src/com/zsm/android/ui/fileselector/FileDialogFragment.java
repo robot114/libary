@@ -25,8 +25,10 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zsm.R;
@@ -56,9 +58,56 @@ public class FileDialogFragment extends DialogFragment {
 	private SaveLoadClickListener saveLoadClickListener;
 	private FragmentManager fragmentManager;
 	private boolean showFileName;
+	private boolean mCustomerFilter;
+	private TextView mFilterTextView;
+	private Activity mActivity;
+	private AlertDialog mFilterDialog;
 
 	public FileDialogFragment() {
 		
+	}
+
+	/**
+	 * Constructor with the full parameters list.
+	 * 
+	 * @param activity Activity to attach this fragment
+	 * @param title Title of the file dialog
+	 * @param operation	LOAD/SAVE/FOLDER
+	 * @param currentPath Path from which to list the files
+	 * @param onHandleFileListener Notified when the positive button clicked.
+	 * @param filters Filters to list the files
+	 * @param includeSubDir True, all the files are list in the dialog 
+	 * 				including the folders; false, only files are list
+	 * @param showFileName	Whether there is a view to display the file name
+	 * 				selected from the file list. When the file name view is
+	 * 				shown, the user can input the file in it. When it is not
+	 * 				shown, and the selection of a FILE from the file list will
+	 * 				equal to click the load button when the operation is LOAD
+	 * @param customerFilter Whether there are views to enable the user to 
+	 * 				input the extensions for filtering the files in the list
+	 */
+	public FileDialogFragment(Activity activity, String title,
+							  final FileOperation operation,
+							  final String currentPath,
+							  final OnHandleFileListener onHandleFileListener,
+							  final FileExtensionFilter[] filters,
+							  final boolean includeSubDir,
+							  final boolean showFileName,
+							  final boolean customerFilter) {
+
+		init(activity, title, operation, currentPath, onHandleFileListener,
+			 filters, includeSubDir, showFileName, customerFilter );
+	}
+
+	public FileDialogFragment(Activity activity, String title,
+							  final FileOperation operation,
+							  final String currentPath,
+							  final OnHandleFileListener onHandleFileListener,
+							  final boolean includeSubDir,
+							  final boolean showFileName) {
+		
+		init(activity, title, operation, currentPath, onHandleFileListener,
+			 null, includeSubDir, showFileName, true );
 	}
 
 	public FileDialogFragment(Activity activity, String title,
@@ -68,9 +117,9 @@ public class FileDialogFragment extends DialogFragment {
 							  final FileExtensionFilter[] filters,
 							  final boolean includeSubDir,
 							  final boolean showFileName ) {
-
+				
 		init(activity, title, operation, currentPath, onHandleFileListener,
-			 filters, includeSubDir, showFileName );
+			 filters, includeSubDir, showFileName, false );
 	}
 
 	public FileDialogFragment(Activity activity, String title,
@@ -80,7 +129,7 @@ public class FileDialogFragment extends DialogFragment {
 							  final FileExtensionFilter[] filters) {
 
 		init(activity, title, operation, currentPath, onHandleFileListener,
-			 filters, true, true );
+			 filters, true, true, false );
 	}
 
 	private void init(Activity activity, String title,
@@ -89,8 +138,10 @@ public class FileDialogFragment extends DialogFragment {
 					  final OnHandleFileListener onHandleFileListener,
 					  final FileExtensionFilter[] filters,
 					  final boolean includeSubDir,
-					  boolean showFileName) {
+					  boolean showFileName,
+					  boolean customerFilter) {
 		
+		mActivity = activity;
 		fragmentManager = activity.getFragmentManager();
 		this.title = title;
 		this.includeSubDir = includeSubDir;
@@ -120,6 +171,8 @@ public class FileDialogFragment extends DialogFragment {
 		saveLoadClickListener
 			= new SaveLoadClickListener(operation, this, activity);
 		this.showFileName = showFileName;
+		
+		mCustomerFilter = customerFilter;
 	}
 
 	public FileDialogFragment( Activity activity, String title,
@@ -135,7 +188,8 @@ public class FileDialogFragment extends DialogFragment {
 			= new FileExtensionFilter( extensions, filterDescription );
 		
 		init( activity, title, operation, currentPath, onHandleFileListener,
-			  new FileExtensionFilter[]{ ff }, includeSubDir, showFileName );
+			  new FileExtensionFilter[]{ ff }, includeSubDir, showFileName,
+			  false );
 	}
 	
     @Override
@@ -186,9 +240,73 @@ public class FileDialogFragment extends DialogFragment {
 		setNewFolderButton(view, operation);
 		setCancelButton(view);
 
+		View textLayout = view.findViewById( R.id.fileFilterTextLayout );
+		mFilterTextView = (TextView)view.findViewById( R.id.fileFilterText );
+		if( mCustomerFilter ) {
+			ImageView imageFileFilter
+				= (ImageView)view.findViewById( R.id.fileFilterImage );
+			textLayout.setVisibility( View.VISIBLE );
+			imageFileFilter.setOnClickListener( new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					initFilterDialog();
+					mFilterDialog.show();
+				}
+			} );
+		} else {
+			textLayout.setVisibility( View.GONE );
+		}
+		
         return view;
     }
-  
+
+	private void initFilterDialog() {
+		if( mFilterDialog != null ) {
+			return;
+		}
+		
+		final EditText edit = new EditText(mActivity);
+		
+		final OnClickListener okListener = new OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				FileExtensionFilter filter = null;
+				try {
+					filter = new FileExtensionFilter( edit.getText().toString(), "" );
+				} catch ( IllegalArgumentException e ) {
+					Toast.makeText( mActivity, R.string.messageInvalidFileFilter,
+									Toast.LENGTH_SHORT )
+						 .show();
+					return;
+				}
+				
+				mFilterTextView.setText( filter.getExtDescription() );
+				makeList(mCurrentLocation, filter);
+				mFilterDialog.dismiss();
+			}
+		};
+		
+		mFilterDialog = new AlertDialog.Builder(mActivity)
+			.setTitle( R.string.titleFileFilter )
+			.setMessage( R.string.messageFileFilter )
+			.setView(edit)
+			.setCancelable(false)
+			.setPositiveButton( android.R.string.ok,  null )
+			.setNegativeButton( android.R.string.cancel, null )
+			.create();
+		mFilterDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+		    @Override
+		    public void onShow(DialogInterface dialog) {
+		        Button button
+		        	= ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+		        button.setOnClickListener(okListener);
+				edit.setText( mFilterTextView.getText() );
+				edit.selectAll();
+		    }
+		});
+	}
+	
     /** The system calls this only when creating the layout in a dialog. */
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -244,6 +362,7 @@ public class FileDialogFragment extends DialogFragment {
 				
 				FileExtensionFilter filter
 					= (FileExtensionFilter) aAdapter.getItemAtPosition(position);
+				mFilterTextView.setText( filter.getExtDescription() );
 				makeList(mCurrentLocation, filter);
 			}
 

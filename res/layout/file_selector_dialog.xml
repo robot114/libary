@@ -13,6 +13,11 @@
         android:layout_weight="1"
         android:padding="10dp" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </LinearLayout>
+
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -70,10 +75,50 @@
 	                android:layout_weight="1"
 	                android:text="@string/newFolderButtonText" />            
 	        </LinearLayout>
-	        <Spinner
-		            android:id="@+id/fileFilter"
-		            android:layout_width="fill_parent"
-		            android:layout_height="wrap_content" />
+
+	        <LinearLayout
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content"
+	            android:orientation="vertical" >
+
+	            <LinearLayout
+	                android:id="@+id/fileFilterTextLayout"
+	                android:layout_width="match_parent"
+	                android:layout_height="match_parent" >
+
+	                <TextView
+	                    android:layout_width="wrap_content"
+	                    android:layout_height="wrap_content"
+	                    android:layout_gravity="center_vertical"
+	                    android:text="@string/labelFileFilter"
+	                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	                <TextView
+	                    android:id="@+id/fileFilterText"
+	                    android:layout_width="0dp"
+	                    android:layout_height="wrap_content"
+	                    android:layout_gravity="center_vertical"
+	                    android:layout_weight="1"
+	                    android:focusable="false"
+	                    android:text="Medium Text"
+	                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	                <ImageView
+	                    android:id="@+id/fileFilterImage"
+	                    android:layout_width="wrap_content"
+	                    android:layout_height="wrap_content"
+	                    android:layout_gravity="center_vertical"
+	                    android:src="@drawable/filter" />
+
+	            </LinearLayout>
+
+	            <Spinner
+	                android:id="@+id/fileFilter"
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content" />
+
+	        </LinearLayout>
+
 	    </LinearLayout>
     </ScrollView>
 </LinearLayout>

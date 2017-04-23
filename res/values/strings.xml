@@ -28,4 +28,8 @@
     
     <string name="emptyTime">00:00</string>
     
+    <string name="labelFileFilter">"File Filter: "</string>
+    <string name="titleFileFilter">Filter of Files</string>
+    <string name="messageFileFilter">Enter file filter as the extension with the format as \"mp3\". Enter more than one extensions split by \"|\", such as \"mp3|avi\".</string>
+    <string name="messageInvalidFileFilter">Invalid file filter!</string>
 </resources>
