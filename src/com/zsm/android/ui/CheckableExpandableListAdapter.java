@@ -73,15 +73,27 @@ public abstract class CheckableExpandableListAdapter<T> extends BaseExpandableLi
 	private View.OnLongClickListener mCheckBoxViewLongClickListener;
 
 	protected CheckableExpandableListAdapter( Context context,
-											 boolean itemDuplicable ) {
+											  boolean itemDuplicable ) {
 		
+		init( context, newDataList(), itemDuplicable );
+	}
+
+	protected CheckableExpandableListAdapter( Context context,
+											  List<CheckableData> data,
+				 							  boolean itemDuplicable ) {
+	
+		init(context, data, itemDuplicable);
+	}
+
+	private void init(Context context, List<CheckableData> data,
+			boolean itemDuplicable) {
 		mContext = context;
 		mItemDuplicable = itemDuplicable;
 		
 		mCheckBoxViewChangedListener = newOnCheckBoxChangListener();
 		mCheckBoxViewLongClickListener = newOnCheckBoxLongClickListener();
 		
-		mDataList = newDataList();
+		mDataList = data;
 		mShowCheckbox = true;
 	}
 

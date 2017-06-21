@@ -256,11 +256,14 @@ abstract public class Log {
 			buffer.append( ". Message: " );
 		}
 		buffer.append(message);
-		if( objects.length > 0 ) {
+		if( objects.length > 1 ) {
 			buffer.append( " With objects: " );
+		}
+		if( objects.length > 0 ) {
 			for( Object obj : objects ) {
+				buffer.append( ' ' );
 				buffer.append(obj);
-				buffer.append( ", " );
+				buffer.append( ',' );
 			}
 		}
 		return buffer;
