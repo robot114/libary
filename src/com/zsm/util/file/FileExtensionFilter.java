@@ -19,11 +19,10 @@ public class FileExtensionFilter implements Parcelable {
 	public static final String FILTER_ALLOW_ALL = "*.*";
 	
 	private String extensions[];
-
 	private String mExtDescription;
+	private String mDefaultExtension = "";
+	
 	private String toString;
-
-	private boolean mHasEmptyExt = false;
 
 	private FileExtensionFilter() {
 		
@@ -74,7 +73,6 @@ public class FileExtensionFilter implements Parcelable {
 	
 	private void normalizeAndSortExts() {
 		if( extensions.length == 1 && extensions[0].equals( FILTER_ALLOW_ALL ) ) {
-			mHasEmptyExt = true;
 			return;
 		}
 		
@@ -90,11 +88,14 @@ public class FileExtensionFilter implements Parcelable {
 			if( !validExtension( ext ) ) {
 				throw new IllegalArgumentException( "Invalid extension :" + ext );
 			}
-			extensions[i] = ext.trim().toLowerCase();
+			extensions[i] = ext.trim();
 			if( extensions[i].length() == 0 ) {
-				mHasEmptyExt = true;
+				throw new IllegalArgumentException( "Empty extension found!" );
 			}
 		}
+		
+		mDefaultExtension = extensions[0];
+		
 		Arrays.sort( extensions );
 	}
 	
@@ -136,17 +137,28 @@ public class FileExtensionFilter implements Parcelable {
 	}
 
 	public boolean accept(File file) {
+		return accept( file.getName() );
+	}
+
+	public boolean accept(String filename) {
 		if( acceptAll() ) {
 			return true;
 		}
 		
-		String filename = file.getName();
-		int lastIndexOfPoint = filename.lastIndexOf('.');
-		if (lastIndexOfPoint == -1) {
-			return mHasEmptyExt;
-		}
-		String fileType = filename.substring(lastIndexOfPoint+1).toLowerCase();
+		String fileType = FilenameUtils.getExtension(filename).toLowerCase();
 		return Arrays.binarySearch( extensions, fileType ) >= 0;
+	}
+	
+	/**
+	 * The default extension is the first extension in the extension's array.
+	 * For example, the extension is "*.mp3|.wav|wmv", when the filter is
+	 * constructed, the default one will be ".mp3".
+	 * If the method {@link acceptAll} is true, "" will be returned.
+	 * 
+	 * @return the default extension.
+	 */
+	public String getDefaultExtension() {
+		return mDefaultExtension;
 	}
 
 	@Override

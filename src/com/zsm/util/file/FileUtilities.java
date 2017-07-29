@@ -32,4 +32,8 @@ public class FileUtilities {
 		FlagedFileFilter fff = new FlagedFileFilter( filter, includeSubDir );
 		return parent.listFiles( fff );
 	}
+	
+	public static String getExtension( String fileName ) {
+		return fileName.substring(fileName.lastIndexOf("."));
+	}
 }

@@ -2,14 +2,15 @@ package com.zsm.android.ui.fileselector;
 
 import java.io.File;
 
-import com.zsm.R;
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
+
+import com.zsm.R;
+import com.zsm.util.file.FileExtensionFilter;
 
 /**
  * This Listener handles Save or Load button clicks.
@@ -23,6 +24,8 @@ public class SaveLoadClickListener implements OnClickListener {
 	private final FileDialogFragment mFileFragment;
 
 	private final Context mContext;
+
+	private FileExtensionFilter mFileExtensionFilter;
 
 	/**
 	 * @param operation
@@ -40,9 +43,23 @@ public class SaveLoadClickListener implements OnClickListener {
 		mContext = context;
 	}
 
+	public void setFileExtensionFilter( FileExtensionFilter ff ) {
+		mFileExtensionFilter = ff;
+	}
+	
 	@Override
 	public void onClick(final View view) {
-		final String text = mFileFragment.getSelectedFileName();
+		String text = mFileFragment.getSelectedFileName();
+		if( mOperation == FileOperation.SAVE || mOperation == FileOperation.LOAD ) {
+			if (!checkFileName(text)) {
+				return;
+			}
+			if( mFileExtensionFilter != null && !mFileExtensionFilter.accept(text) 
+				&& !mFileExtensionFilter.getDefaultExtension().isEmpty() ) {
+				text = text + "." + mFileExtensionFilter.getDefaultExtension();
+			}
+		}
+		
 		String filePath
 			= mFileFragment.getCurrentLocation().getAbsolutePath()
 				+ File.separator + text;
@@ -52,17 +69,11 @@ public class SaveLoadClickListener implements OnClickListener {
 		// Check file access rights.
 		switch (mOperation) {
 			case SAVE:
-				if (!checkFileName(text)) {
-					return;
-				}
 				if ((file.exists()) && (!file.canWrite())) {
 					messageText = R.string.cannotSaveFileMessage;
 				}
 				break;
 			case LOAD:
-				if (!checkFileName(text)) {
-					return;
-				}
 				messageText = checkFileAndFolder(file);
 				if( messageText == 0 && !file.isFile() ) {
 					messageText = R.string.fileNeeded;
@@ -82,8 +93,8 @@ public class SaveLoadClickListener implements OnClickListener {
 			t.setGravity(Gravity.CENTER, 0, 0);
 			t.show();
 		} else {
-			mFileFragment.handleFile(mOperation, filePath);
 			mFileFragment.dismiss();
+			mFileFragment.handleFile(mOperation, filePath);
 		}
 	}
 

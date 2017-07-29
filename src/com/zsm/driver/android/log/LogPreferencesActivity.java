@@ -1,9 +1,9 @@
 package com.zsm.driver.android.log;
 
-import com.zsm.R;
-
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+
+import com.zsm.R;
 
 public class LogPreferencesActivity extends PreferenceActivity {
 

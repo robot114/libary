@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     <ListPreference
-        android:key="LOG_LEVEL"
+        android:key="@string/prefAdvancedLogKeyLogLevel"
         android:title="@string/prefAdvancedLogLevel"
         android:summary="@string/prefAdvancedLogLevelDesc"
         android:entries="@array/prefLogLevelEntries"
-        android:entryValues="@array/prefLogLevelEntries"/>
+        android:entryValues="@array/prefLogLevelEntries" android:persistent="true"/>
     <MultiSelectListPreference
         android:key="LOG_CHANNELS"
         android:summary="@string/prefAdvancedLogChannelsDesc"

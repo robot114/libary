@@ -363,6 +363,7 @@ public class FileDialogFragment extends DialogFragment {
 				FileExtensionFilter filter
 					= (FileExtensionFilter) aAdapter.getItemAtPosition(position);
 				mFilterTextView.setText( filter.getExtDescription() );
+				saveLoadClickListener.setFileExtensionFilter( filter );
 				makeList(mCurrentLocation, filter);
 			}
 
