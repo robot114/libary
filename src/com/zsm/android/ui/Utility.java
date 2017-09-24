@@ -72,4 +72,15 @@ public class Utility {
 		
 		return drawableFromTheme;
 	}
+	
+	public static void makeTextViewsSameWidth( TextView ...views ) {
+		int maxWidth = -1;
+		for( TextView v : views ) {
+			maxWidth = Math.max( maxWidth, v.getWidth() );
+		}
+		
+		for( TextView v : views ) {
+			v.setWidth( maxWidth );
+		}
+	}
 }
