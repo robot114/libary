@@ -1,8 +1,6 @@
 package com.zsm.android.ui.fileselector;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -11,6 +9,7 @@ import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.Gravity;
@@ -32,8 +31,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zsm.R;
+import com.zsm.util.file.AsyncFileListMaker;
+import com.zsm.util.file.FileData;
 import com.zsm.util.file.FileExtensionFilter;
-import com.zsm.util.file.FileUtilities;
+import com.zsm.util.file.FileListMaker;
 
 public class FileDialogFragment extends DialogFragment {
 
@@ -47,7 +48,7 @@ public class FileDialogFragment extends DialogFragment {
 	private boolean includeSubDir;
 	private String title;
 	private Spinner mFilterSpinner;
-	protected File mCurrentLocation;
+	private File mCurrentLocation;
 	private ListView mFileListView;
 	private Button mSaveLoadButton;
 	private Button mNewFolderButton;
@@ -62,6 +63,8 @@ public class FileDialogFragment extends DialogFragment {
 	private TextView mFilterTextView;
 	private Activity mActivity;
 	private AlertDialog mFilterDialog;
+	private AsyncFileListMaker mAsyncFileListMaker;
+	private ListFileDataDialog mListFileDataDialog;
 
 	public FileDialogFragment() {
 		
@@ -173,6 +176,9 @@ public class FileDialogFragment extends DialogFragment {
 		this.showFileName = showFileName;
 		
 		mCustomerFilter = customerFilter;
+		
+		mListFileDataDialog = new ListFileDataDialog(mActivity);
+		mAsyncFileListMaker = new AsyncFileListMaker( new FileListMaker() );
 	}
 
 	public FileDialogFragment( Activity activity, String title,
@@ -272,7 +278,8 @@ public class FileDialogFragment extends DialogFragment {
 			public void onClick(View v) {
 				FileExtensionFilter filter = null;
 				try {
-					filter = new FileExtensionFilter( edit.getText().toString(), "" );
+					filter = new FileExtensionFilter( edit.getText().toString(),
+													  "", mListFileDataDialog );
 				} catch ( IllegalArgumentException e ) {
 					Toast.makeText( mActivity, R.string.messageInvalidFileFilter,
 									Toast.LENGTH_SHORT )
@@ -340,7 +347,8 @@ public class FileDialogFragment extends DialogFragment {
 		mFilterSpinner = (Spinner) view.findViewById(R.id.fileFilter);
 		if (fitlesFilter == null || fitlesFilter.length == 0) {
 			fitlesFilter
-				= new FileExtensionFilter[] { new FileExtensionFilter("All files") };
+				= new FileExtensionFilter[] { 
+						new FileExtensionFilter("All files", mListFileDataDialog ) };
 			mFilterSpinner.setEnabled(false);
 		}
 		ArrayAdapter<FileExtensionFilter> adapter
@@ -404,6 +412,7 @@ public class FileDialogFragment extends DialogFragment {
 				}
 			}
 		});
+		
 		makeList();
 	}
 
@@ -413,31 +422,18 @@ public class FileDialogFragment extends DialogFragment {
 	 * @param location
 	 *            Indicates the directory whose contents should be displayed in
 	 *            the dialog.
-	 * @param fitlesFilter
+	 * @param filesFilter
 	 *            The filter specifies the type of file to be displayed
 	 */
-	private void makeList(final File location, final FileExtensionFilter fitlesFilter) {
-		final ArrayList<FileData> fileList = new ArrayList<FileData>();
-		final String parentLocation = location.getParent();
-		if (parentLocation != null) {
-			// First item on the list.
-			fileList.add(new FileData("../", FileData.UP_FOLDER));
-		}
-		File listFiles[]
-				= FileUtilities.listFile( location, fitlesFilter, includeSubDir );
-		if (listFiles != null) {
-			for (File file : listFiles) {
-				int type
-					= file.isDirectory()  ? FileData.DIRECTORY : FileData.FILE;
-				fileList.add(new FileData(file.getName(), type));
-			}
-			Collections.sort(fileList);
-		}
-		// Fill the list with the contents of fileList.
-		if (mFileListView != null) {
-			FileListAdapter adapter = new FileListAdapter(getActivity(), fileList);
-			mFileListView.setAdapter(adapter);
-		}
+	private void makeList(final File location, final FileExtensionFilter filesFilter) {
+		// To void multiple threads operate same adapter making files in the list error
+		FileListAdapter listAdapter = new FileListAdapter(getActivity());
+		mFileListView.setAdapter(listAdapter);
+		mListFileDataDialog.show();
+		
+		mAsyncFileListMaker.makeList(Uri.fromFile(location), filesFilter,
+									 listAdapter, includeSubDir,
+									 mListFileDataDialog );
 	}
 
 	private void makeList() {

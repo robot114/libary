@@ -9,8 +9,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
+import com.zsm.util.file.android.StringFilter;
+
 @SuppressLint("DefaultLocale")
-public class FileExtensionFilter implements Parcelable {
+public class FileExtensionFilter implements Parcelable, StringFilter {
 
 	private static final char[] INVALID_CHAR_SET
 		= new char[]{ '\\', '\"', '/', '|', '*', ':', '?', '<', '>', '.' };
@@ -24,6 +26,8 @@ public class FileExtensionFilter implements Parcelable {
 	
 	private String toString;
 
+	private FileDataListNotifier mNotifier;
+
 	private FileExtensionFilter() {
 		
 	}
@@ -36,6 +40,20 @@ public class FileExtensionFilter implements Parcelable {
 	public FileExtensionFilter( String exts[], String filterDescription ) {
 		
 		extensions = Arrays.copyOf( exts, exts.length );
+		init(filterDescription);
+	}
+
+	/**
+	 * Constructor of filter by extension.
+	 * @param exts Extensions with the format ".mp3"
+	 * @param filterDescription File filter's description, such as "Audio file"
+	 * @param notifier Notifier be notified when a file is accepted or rejected
+	 */
+	public FileExtensionFilter( String exts[], String filterDescription,
+								FileDataListNotifier notifier ) {
+		
+		extensions = Arrays.copyOf( exts, exts.length );
+		mNotifier = notifier;
 		init(filterDescription);
 	}
 
@@ -54,6 +72,21 @@ public class FileExtensionFilter implements Parcelable {
 	 * @param filterDescription File filter's description, such as "Audio file"
 	 */
 	public FileExtensionFilter( String exts, String filterDescription ) {
+		this( exts, filterDescription, (FileDataListNotifier)null );
+	}
+	
+	/**
+	 * Construct filter from a string with extensions, which are separated by "|".
+	 * Each extension can be as the format "*.ext", ".ext", or "ext".
+	 * An example of the string is "*.mp3|.wav|wmv".
+	 * 
+	 * @param exts extension string
+	 * @param filterDescription File filter's description, such as "Audio file"
+	 * @param notifier Notifier be notified when a file is accepted or rejected
+	 */
+	public FileExtensionFilter(String exts, String filterDescription,
+							   FileDataListNotifier notifier ) {
+		
 		TextUtils.StringSplitter splitter = new TextUtils.SimpleStringSplitter('|');
 		splitter.setString(exts);
 		
@@ -65,12 +98,20 @@ public class FileExtensionFilter implements Parcelable {
 		extensions = new String[ v.size() ];
 		v.toArray( extensions );
 		init( filterDescription );
+		mNotifier = notifier;
 	}
-	
+
 	public FileExtensionFilter( String allowAllfilterDescription ) {
-		this( new String[]{ FILTER_ALLOW_ALL }, allowAllfilterDescription );
+		this( allowAllfilterDescription, (FileDataListNotifier)null );
 	}
 	
+	public FileExtensionFilter(String allowAllfilterDescription,
+							   FileDataListNotifier notifier ) {
+		
+		this( new String[]{ FILTER_ALLOW_ALL }, allowAllfilterDescription );
+		mNotifier = notifier;
+	}
+
 	private void normalizeAndSortExts() {
 		if( extensions.length == 1 && extensions[0].equals( FILTER_ALLOW_ALL ) ) {
 			return;
@@ -141,6 +182,15 @@ public class FileExtensionFilter implements Parcelable {
 	}
 
 	public boolean accept(String filename) {
+		boolean a = acceptByName(filename);
+		if( mNotifier != null ) {
+			mNotifier.forAcception( filename, a );
+		}
+		
+		return a;
+	}
+	
+	public boolean acceptByName(String filename) {
 		if( acceptAll() ) {
 			return true;
 		}

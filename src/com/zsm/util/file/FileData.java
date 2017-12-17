@@ -1,4 +1,4 @@
-package com.zsm.android.ui.fileselector;
+package com.zsm.util.file;
 
 /**
  * This class contais information about the file name and type
@@ -12,6 +12,8 @@ public class FileData implements Comparable<FileData> {
 	/** Constant that specifies the object is a file */
 	public static final int FILE = 2;
 
+	private static final String TYPE_NAME[] = { "UP_FOLDER", "DIRECTORY", "FILE" };
+	
 	/** The file's name */
 	final private String mFileName;
 
@@ -52,5 +54,10 @@ public class FileData implements Comparable<FileData> {
 
 	public int getFileType() {
 		return mFileType;
+	}
+	
+	@Override
+	public String toString() {
+		return mFileName + "(" + TYPE_NAME[mFileType] + ")";
 	}
 }

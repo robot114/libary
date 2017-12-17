@@ -3,33 +3,7 @@
     <string name="app_name">ZsmLib</string>
     <string name="menuLogClear">Clear</string>
     <string name="menuLogShow">Log channel</string>
-    <string name="fileSelectorTitle">Select File</string>
-    <string name="fileSelectorLabel">File Name:</string>
-    
-    <string name="enterFileName">Enter file name:</string>
-    <string name="saveButtonText">Save</string>
-    <string name="cancelButtonText">Cancel</string>
-    <string name="cannotSaveFileMessage">Cannot save file</string>
-    <string name="fileNameFirstMessage">Please enter the file name first</string>
-    <string name="okButtonText">OK</string>
-    <string name="loadButtonText">Load</string>
-    <string name="accessDenied">Access denied</string>
-    <string name="missingFile">No such file</string>
-    <string name="fileNeeded">Please to select a file</string>
-    <string name="newFolderButtonText">New folder</string>
-    <string name="newFolderDialogMessage">Create new folder</string>
-    <string name="createButtonText">Create</string>
-    <string name="folderCreationOk">Folder created successfully</string>
-    <string name="folderCreationError">Error while creating folder</string>
-    <string name="information">Information</string>
-    <string name="openFileFailed">Cannot open this file!</string>
-    <string name="openPlayFileFirst">Open the file to be played first!</string>
-    <string name="audioFileFilterDescription">Audio files</string>
     
     <string name="emptyTime">00:00</string>
     
-    <string name="labelFileFilter">"File Filter: "</string>
-    <string name="titleFileFilter">Filter of Files</string>
-    <string name="messageFileFilter">Enter file filter as the extension with the format as \"mp3\". Enter more than one extensions split by \"|\", such as \"mp3|avi\".</string>
-    <string name="messageInvalidFileFilter">Invalid file filter!</string>
 </resources>

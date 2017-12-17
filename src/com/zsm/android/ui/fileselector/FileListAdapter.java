@@ -1,28 +1,35 @@
 package com.zsm.android.ui.fileselector;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import com.zsm.R;
+import java.util.Collections;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
+import com.zsm.R;
+import com.zsm.util.file.FileData;
+import com.zsm.util.file.NotifiableList;
+
 /**
  * Adapter used to display a files list
  */
-public class FileListAdapter extends BaseAdapter {
+public class FileListAdapter extends BaseAdapter implements NotifiableList<FileData> {
 
 	/** Array of FileData objects that will be used to display a list */
 	private final ArrayList<FileData> mFileDataArray;
 
 	private final Context mContext;
 
-	public FileListAdapter(Context context, List<FileData> aFileDataArray) {
-		mFileDataArray = (ArrayList<FileData>) aFileDataArray;
+	private Handler mHandler;
+
+	public FileListAdapter(Context context) {
+		mFileDataArray = new ArrayList<FileData>( 16 );
 		mContext = context;
+		mHandler = new Handler(Looper.getMainLooper());
 	}
 
 	@Override
@@ -64,4 +71,45 @@ public class FileListAdapter extends BaseAdapter {
 		return tempView;
 	}
 
+	@Override
+	public void addAndNotify(final FileData file) {
+		if( Looper.myLooper() == Looper.getMainLooper() ) {
+			addAndNotifyInner(file);
+		} else {
+			mHandler.post( new Runnable() {
+				@Override
+				public void run() {
+					addAndNotifyInner(file);
+				}
+			});
+		}
+	}
+
+	private void addAndNotifyInner(FileData file) {
+		mFileDataArray.add(file);
+		super.notifyDataSetChanged();
+	}
+
+	@Override
+	public void clear() {
+		mFileDataArray.clear();
+	}
+
+	@Override
+	public void sortAndNotify() {
+		if( Looper.myLooper() == Looper.getMainLooper() ) {
+			sortAndNotifyInner();
+		} else {
+			mHandler.post( new Runnable() {
+				@Override
+				public void run() {
+					sortAndNotifyInner();
+				}
+			});
+		}
+	}
+
+	private void sortAndNotifyInner() {
+		Collections.sort(mFileDataArray);
+	}
 }
