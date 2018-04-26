@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:minHeight="10000dp"
+    android:minWidth="10000dp"
+    android:orientation="vertical" >
+
+    <fragment
+        android:id="@+id/fragmentList"
+        android:name="com.zsm.android.ui.documentSelector.DocumentListFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="@dimen/default_margin"
+        android:layout_weight="1"
+        tools:layout="@layout/document_list_fragment" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/default_margin" >
+
+        <TextView
+            android:id="@+id/labelDocument"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/editTextName"
+            android:text="@string/documenSelector_label_name"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="text" />
+    </LinearLayout>
+	<Spinner
+	    android:id="@+id/fileFilter"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content" />
+	
+	<LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    style="?android:attr/buttonBarStyle" >
+	
+	    <Button
+	        android:id="@+id/buttonCancel"
+	        android:layout_width="0dp"
+	        android:layout_height="wrap_content"
+	        android:layout_margin="@dimen/default_margin"
+	        android:layout_weight="1"
+	        android:text="@android:string/cancel"
+	        style="?android:attr/buttonBarButtonStyle" />
+	
+	    <Button
+	        android:id="@+id/buttonOk"
+	        android:layout_width="0dp"
+	        android:layout_height="wrap_content"
+	        android:layout_margin="@dimen/default_margin"
+	        android:layout_weight="1"
+	        android:text="@android:string/ok"
+	        style="?android:attr/buttonBarButtonStyle" />
+	
+	</LinearLayout>
+
+</LinearLayout>

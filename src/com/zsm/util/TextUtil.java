@@ -29,5 +29,9 @@ public class TextUtil {
 		appendDurationText(b, duration);
 		return b;
 	}
+	
+	public static boolean isEmptyString( String text ) {
+		return text == null || text.length() == 0;
+	}
 
 }

@@ -26,7 +26,7 @@ public class FileExtensionFilter implements Parcelable, StringFilter {
 	
 	private String toString;
 
-	private FileDataListNotifier mNotifier;
+	private FileDataListMakerNotifier mNotifier;
 
 	private FileExtensionFilter() {
 		
@@ -50,7 +50,7 @@ public class FileExtensionFilter implements Parcelable, StringFilter {
 	 * @param notifier Notifier be notified when a file is accepted or rejected
 	 */
 	public FileExtensionFilter( String exts[], String filterDescription,
-								FileDataListNotifier notifier ) {
+								FileDataListMakerNotifier notifier ) {
 		
 		extensions = Arrays.copyOf( exts, exts.length );
 		mNotifier = notifier;
@@ -72,7 +72,7 @@ public class FileExtensionFilter implements Parcelable, StringFilter {
 	 * @param filterDescription File filter's description, such as "Audio file"
 	 */
 	public FileExtensionFilter( String exts, String filterDescription ) {
-		this( exts, filterDescription, (FileDataListNotifier)null );
+		this( exts, filterDescription, (FileDataListMakerNotifier)null );
 	}
 	
 	/**
@@ -85,7 +85,7 @@ public class FileExtensionFilter implements Parcelable, StringFilter {
 	 * @param notifier Notifier be notified when a file is accepted or rejected
 	 */
 	public FileExtensionFilter(String exts, String filterDescription,
-							   FileDataListNotifier notifier ) {
+							   FileDataListMakerNotifier notifier ) {
 		
 		TextUtils.StringSplitter splitter = new TextUtils.SimpleStringSplitter('|');
 		splitter.setString(exts);
@@ -102,11 +102,11 @@ public class FileExtensionFilter implements Parcelable, StringFilter {
 	}
 
 	public FileExtensionFilter( String allowAllfilterDescription ) {
-		this( allowAllfilterDescription, (FileDataListNotifier)null );
+		this( allowAllfilterDescription, (FileDataListMakerNotifier)null );
 	}
 	
 	public FileExtensionFilter(String allowAllfilterDescription,
-							   FileDataListNotifier notifier ) {
+							   FileDataListMakerNotifier notifier ) {
 		
 		this( new String[]{ FILTER_ALLOW_ALL }, allowAllfilterDescription );
 		mNotifier = notifier;
@@ -148,6 +148,10 @@ public class FileExtensionFilter implements Parcelable, StringFilter {
 		}
 		
 		return true;
+	}
+	
+	public String[] getExtensions() {
+		return extensions;
 	}
 	
 	public String getExtDescription() {

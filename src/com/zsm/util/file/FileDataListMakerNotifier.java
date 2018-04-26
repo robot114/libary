@@ -1,6 +1,6 @@
 package com.zsm.util.file;
 
-public interface FileDataListNotifier {
+public interface FileDataListMakerNotifier {
 
 	/**
 	 * Show the notifier if necessary
@@ -54,4 +54,5 @@ public interface FileDataListNotifier {
 	 * @param accepted true, the file is accepted; false, it is denied
 	 */
 	void forAcception(String filename, boolean accepted);
+
 }

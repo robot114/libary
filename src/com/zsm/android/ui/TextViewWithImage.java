@@ -1,4 +1,4 @@
-package com.zsm.android.ui.fileselector;
+package com.zsm.android.ui;
 
 import android.content.Context;
 import android.view.View;

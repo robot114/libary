@@ -2,6 +2,7 @@ package com.zsm.android.ui.fileselector;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 import android.content.Context;
 import android.os.Handler;
@@ -11,13 +12,14 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
 import com.zsm.R;
+import com.zsm.android.ui.TextViewWithImage;
 import com.zsm.util.file.FileData;
-import com.zsm.util.file.NotifiableList;
+import com.zsm.util.file.SortableAdapter;
 
 /**
  * Adapter used to display a files list
  */
-public class FileListAdapter extends BaseAdapter implements NotifiableList<FileData> {
+public class FileListAdapter extends BaseAdapter implements SortableAdapter<FileData> {
 
 	/** Array of FileData objects that will be used to display a list */
 	private final ArrayList<FileData> mFileDataArray;
@@ -72,7 +74,7 @@ public class FileListAdapter extends BaseAdapter implements NotifiableList<FileD
 	}
 
 	@Override
-	public void addAndNotify(final FileData file) {
+	public void add(final FileData file) {
 		if( Looper.myLooper() == Looper.getMainLooper() ) {
 			addAndNotifyInner(file);
 		} else {
@@ -96,20 +98,20 @@ public class FileListAdapter extends BaseAdapter implements NotifiableList<FileD
 	}
 
 	@Override
-	public void sortAndNotify() {
+	public void sort( final Comparator<FileData> c ) {
 		if( Looper.myLooper() == Looper.getMainLooper() ) {
-			sortAndNotifyInner();
+			sortAndNotifyInner(c);
 		} else {
 			mHandler.post( new Runnable() {
 				@Override
 				public void run() {
-					sortAndNotifyInner();
+					sortAndNotifyInner(c);
 				}
 			});
 		}
 	}
 
-	private void sortAndNotifyInner() {
-		Collections.sort(mFileDataArray);
+	private void sortAndNotifyInner(Comparator<FileData> c) {
+		Collections.sort(mFileDataArray, c);
 	}
 }

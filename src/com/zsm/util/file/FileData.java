@@ -1,10 +1,24 @@
 package com.zsm.util.file;
 
+import java.util.Comparator;
+
+
 /**
- * This class contais information about the file name and type
+ * This class contains information about the file name and type
  */
 public class FileData implements Comparable<FileData> {
 
+	public static final Comparator<FileData> DEFAULT_COMPARATOR
+			= new Comparator<FileData>() {
+				@Override
+				public int compare(FileData lhs, FileData rhs) {
+					if (lhs.mFileType != rhs.mFileType) {
+						return lhs.mFileType - rhs.mFileType;
+					}
+					return lhs.mFileName.compareTo(rhs.mFileName);
+				}
+	};
+	
 	/** Constant that specifies the object is a reference to the parent */
 	public static final int UP_FOLDER = 0;
 	/** Constant that specifies the object is a folder */
@@ -14,17 +28,16 @@ public class FileData implements Comparable<FileData> {
 
 	private static final String TYPE_NAME[] = { "UP_FOLDER", "DIRECTORY", "FILE" };
 	
-	/** The file's name */
-	final private String mFileName;
-
 	/** Defines the type of file. Can be one of UP_FOLDER, DIRECTORY or FILE */
 	final private int mFileType;
-
+	
+	/** The file's name */
+	final private String mFileName;
 	/**
 	 * This class holds information about the file.
 	 * 
 	 * @param fileName
-	 *            - file name
+	 * 			  - file name
 	 * @param fileType
 	 *            - file type - can be UP_FOLDER, DIRECTORY or FILE
 	 * @throws IllegalArgumentException
@@ -42,10 +55,7 @@ public class FileData implements Comparable<FileData> {
 
 	@Override
 	public int compareTo(final FileData another) {
-		if (mFileType != another.mFileType) {
-			return mFileType - another.mFileType;
-		}
-		return mFileName.compareTo(another.mFileName);
+		return DEFAULT_COMPARATOR.compare(this, another);
 	}
 
 	public String getFileName() {

@@ -1,26 +1,28 @@
 package com.zsm.util.file;
 
 import java.io.File;
+import java.util.Comparator;
 
 import android.net.Uri;
 
 import com.zsm.log.Log;
 
 
-public class FileListMaker implements FileDataListMaker {
+public class FileListMaker implements FileDataListMaker<FileData> {
 
 	@Override
 	public void makeList(Object context, Uri location,
 						 FileExtensionFilter filesFilter,
-						 NotifiableList<FileData> fileList,
+						 SortableAdapter<FileData> adapter,
+						 Comparator<FileData> comparator,
 						 boolean includeSubDir,
-						 FileDataListNotifier notifier ) {
+						 FileDataListMakerNotifier notifier ) {
 
 		final File current = new File( location.getPath() );
 		final File parentLocation = current.getParentFile();
 		if (parentLocation != null) {
 			// First item on the list.
-			fileList.addAndNotify(new FileData("../", FileData.UP_FOLDER));
+			adapter.add(new FileData("../", FileData.UP_FOLDER));
 		}
 		File listFiles[]
 				= FileUtilities.listFile( current, filesFilter, includeSubDir );
@@ -35,12 +37,12 @@ public class FileListMaker implements FileDataListMaker {
 					break;
 				} else {
 					FileData fileData = new FileData(filename, type);
-					fileList.addAndNotify(fileData);
+					adapter.add(fileData);
 				}
 			}
 			
 			notifier.beforeToMakeOrder();
-			fileList.sortAndNotify();
+			adapter.sort(comparator);
 		}
 		
 	}

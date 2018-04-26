@@ -63,7 +63,7 @@ public class FileDialogFragment extends DialogFragment {
 	private TextView mFilterTextView;
 	private Activity mActivity;
 	private AlertDialog mFilterDialog;
-	private AsyncFileListMaker mAsyncFileListMaker;
+	private AsyncFileListMaker<FileData> mAsyncFileListMaker;
 	private ListFileDataDialog mListFileDataDialog;
 
 	public FileDialogFragment() {
@@ -178,7 +178,7 @@ public class FileDialogFragment extends DialogFragment {
 		mCustomerFilter = customerFilter;
 		
 		mListFileDataDialog = new ListFileDataDialog(mActivity);
-		mAsyncFileListMaker = new AsyncFileListMaker( new FileListMaker() );
+		mAsyncFileListMaker = new AsyncFileListMaker<FileData>( new FileListMaker() );
 	}
 
 	public FileDialogFragment( Activity activity, String title,
@@ -334,10 +334,10 @@ public class FileDialogFragment extends DialogFragment {
         return dialog;
     }
 
-	/**
+    /**
 	 * This method prepares a filter's list with the String's array
 	 * 
-	 * @param aFilesFilter
+	 * @param fitlesFilter
 	 *            - array of filters, the elements of the array will be used as
 	 *            elements of the spinner
 	 */
@@ -429,11 +429,15 @@ public class FileDialogFragment extends DialogFragment {
 		// To void multiple threads operate same adapter making files in the list error
 		FileListAdapter listAdapter = new FileListAdapter(getActivity());
 		mFileListView.setAdapter(listAdapter);
-		mListFileDataDialog.show();
+		if( mAsyncFileListMaker.isMaking( ) ) {
+			mAsyncFileListMaker.cancel();
+		}
 		
-		mAsyncFileListMaker.makeList(Uri.fromFile(location), filesFilter,
-									 listAdapter, includeSubDir,
-									 mListFileDataDialog );
+		mListFileDataDialog = new ListFileDataDialog(mActivity);
+		mAsyncFileListMaker.makeList(getActivity(), Uri.fromFile(location),
+									 filesFilter, listAdapter,
+									 FileData.DEFAULT_COMPARATOR,
+									 includeSubDir, mListFileDataDialog );
 	}
 
 	private void makeList() {

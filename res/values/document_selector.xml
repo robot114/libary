@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="documenSelector_message_progress">Searching: </string>
+    <string name="documenSelector_message_sorting">Sorting the documents&#8230;</string>
+    <string name="documenSelector_label_name">Name: </string>
+    <string name="documenSelector_prompt_accessDeny">Access denied!</string>
+    <string name="documenSelector_prompt_requestAccess">Without the permission to the storage, Cannot browse the directory and select document.\r\nPermit to access the storage, please.</string>
+    <string name="documenSelector_title_requestAccess">Permission to the storage</string>
+</resources>

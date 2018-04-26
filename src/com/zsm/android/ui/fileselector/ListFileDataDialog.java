@@ -8,9 +8,9 @@ import android.os.Looper;
 
 import com.zsm.R;
 import com.zsm.log.Log;
-import com.zsm.util.file.FileDataListNotifier;
+import com.zsm.util.file.FileDataListMakerNotifier;
 
-public class ListFileDataDialog implements FileDataListNotifier {
+public class ListFileDataDialog implements FileDataListMakerNotifier {
 
 	private static final int MESSAGE_INTERVAL = 5;
 	private Context mContext;
@@ -51,13 +51,31 @@ public class ListFileDataDialog implements FileDataListNotifier {
 	public void show() {
 		mNotifiedCounter = 0;
 		mRunning = true;
-		mProgressDialog.show();
+		if( Looper.myLooper() == Looper.getMainLooper() ) {
+			mProgressDialog.show();
+		} else {
+			mHandler.post( new Runnable() {
+				@Override
+				public void run() {
+					mProgressDialog.show();
+				}
+			} );
+		}
 	}
 
 	@Override
 	public void dismiss() {
-		mProgressDialog.dismiss();
 		mRunning = false;
+		if( Looper.myLooper() == Looper.getMainLooper() ) {
+			mProgressDialog.dismiss();
+		} else {
+			mHandler.post( new Runnable() {
+				@Override
+				public void run() {
+					mProgressDialog.dismiss();
+				}
+			} );
+		}
 		Log.d( "Progress dialg dismissed." );
 	}
 	

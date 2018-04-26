@@ -986,8 +986,10 @@ public class FilenameUtils {
         int len = path.length();
         for (int i = 0; i < len; i++) {
             if (path.charAt(i) == 0) {
-                throw new IllegalArgumentException("Null byte present in file/path name. There are no " +
-                        "known legitimate use cases for such data, but several injection attacks may use it");
+                throw new IllegalArgumentException(
+                		"Null byte present in file/path name. There are no "
+                		+ "known legitimate use cases for such data, "
+                		+ "but several injection attacks may use it");
             }
         }
     }

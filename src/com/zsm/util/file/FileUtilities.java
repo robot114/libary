@@ -48,7 +48,13 @@ public class FileUtilities {
 	}
 	
 	public static String getExtension( String fileName ) {
-		return fileName.substring(fileName.lastIndexOf("."));
+		int i = fileName.lastIndexOf(".");
+		return i > 0 ? fileName.substring(i) : "";
+	}
+	
+	public static String removeExtension( String fileName ) {
+		int i = fileName.lastIndexOf(".");
+		return i > 0 ? fileName.substring(0, i) : fileName;
 	}
 	
 	public static long sizeFromUri(ContentResolver cr, Uri uri) {
