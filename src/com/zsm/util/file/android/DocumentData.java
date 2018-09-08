@@ -26,7 +26,7 @@ public abstract class DocumentData {
 					return lhs.getType().ordinal() - rhs.getType().ordinal();
 				}
 				
-				return lhs.getName().compareTo( rhs.getName() );
+				return lhs.getName().compareToIgnoreCase( rhs.getName() );
 			}
 		
 	};

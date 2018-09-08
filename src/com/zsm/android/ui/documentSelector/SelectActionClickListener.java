@@ -90,14 +90,14 @@ public class SelectActionClickListener implements OnClickListener {
 				}
 				break;
 			case FOLDER:
-				if( !DocumentFileUtilities.isTreeUri( pathUri ) ) {
+				if( !DocumentFileUtilities.isTreeDocuemntUri( pathUri ) ) {
 					String documentId
 						= DocumentFileUtilities.getDocumentId(pathUri);
 					pathUri
 						= DocumentsContract.buildTreeDocumentUri(
 								pathUri.getAuthority(), documentId); 
 				}
-				document = DocumentFile.fromTreeUri(mContext, pathUri);
+				document = DocumentFile.fromSingleUri(mContext, pathUri);
 				messageText = checkFileAndFolder(document);
 				break;
 			default:

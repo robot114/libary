@@ -190,7 +190,7 @@ public class DocumentFileUtilities {
 												 String encodeTreeId,
 												 String documentId) {
 		
-		if( !encodeTreeId.startsWith( documentId ) ) {
+		if( !documentId.startsWith( encodeTreeId ) ) {
 			throw new InvalidParameterException( 
 				encodeTreeId + " is not the descendant directory of " + documentId );
 		}

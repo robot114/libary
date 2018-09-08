@@ -191,7 +191,13 @@ public class DocumentSelectorFragment extends DialogFragment
 	 * 		null otherwise
 	 */
 	private DocumentFile directoryFromUri(final Uri uri) {
-		Uri pathUri = DocumentFileUtilities.getPathUri(mActivity, uri, false);
+		Uri pathUri = null;
+		try {
+			pathUri = DocumentFileUtilities.getPathUri(mActivity, uri, false);
+		} catch( Exception e ) {
+			return null;
+		}
+		
 		return DocumentFile.fromSingleUri(mActivity, pathUri);
 	}
 
@@ -202,8 +208,10 @@ public class DocumentSelectorFragment extends DialogFragment
 		outState.putString( KEY_TITLE, mTitle );
 		outState.putString( KEY_OPERATION, mOperation.name() );
 		outState.putParcelableArray( KEY_FILTERS, mFileFilters );
-		outState.putString( KEY_CURRENT_LOCATION,
-							mCurrentLocation.getUri().toString() );
+		if( mCurrentLocation != null && mCurrentLocation.getUri() != null ) {
+			outState.putString( KEY_CURRENT_LOCATION,
+								mCurrentLocation.getUri().toString() );
+		}
 		outState.putBoolean( KEY_INCL_SUBDIR, mIncludeSubDir);
 	}
 
@@ -249,7 +257,7 @@ public class DocumentSelectorFragment extends DialogFragment
 			cancelBtn.setOnClickListener( new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					getActivity().finish();
+					dismiss();
 				}
 			} );
 		}
