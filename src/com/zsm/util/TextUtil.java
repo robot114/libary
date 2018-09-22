@@ -34,4 +34,13 @@ public class TextUtil {
 		return text == null || text.length() == 0;
 	}
 
+    public static String bytesToHex(byte[] hashInBytes) {
+
+        StringBuilder builder = new StringBuilder();
+        for (byte b : hashInBytes) {
+        	builder.append(String.format("%02x", b));
+        }
+        return builder.toString();
+
+    }
 }

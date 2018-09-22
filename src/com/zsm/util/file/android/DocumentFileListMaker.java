@@ -51,6 +51,8 @@ public class DocumentFileListMaker implements FileDataListMaker<DocumentData> {
 		DocumentFile[] listFiles
 				= DocumentFileUtilities.listFiles( c, location, filesFilter,
 												   includeSubDir, notifier );
+		
+		notifier.beforeToMakeOrder();
 		if (listFiles != null) {
 			for ( DocumentFile file : listFiles ) {
 				DocumentData.TYPE type
@@ -61,7 +63,6 @@ public class DocumentFileListMaker implements FileDataListMaker<DocumentData> {
 				adapter.add(dfd);
 			}
 			
-			notifier.beforeToMakeOrder();
 			adapter.sort( comparator );
 		}
 		

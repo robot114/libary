@@ -4,22 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.zsm.R;
+import com.zsm.android.ui.PopupWindows;
 
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
+import android.widget.PopupWindow.OnDismissListener;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-
-import android.widget.PopupWindow.OnDismissListener;
 
 /**
  * QuickAction dialog, shows action list as icon and text like the one in Gallery3D app. Currently supports vertical 
@@ -31,7 +30,8 @@ import android.widget.PopupWindow.OnDismissListener;
  * - Kevin Peck <kevinwpeck@gmail.com>
  */
 public class QuickAction extends PopupWindows implements OnDismissListener {
-	private View mRootView;
+    public enum ORIENTATION { HORIZONTAL, VERTICAL };
+    
 	private ImageView mArrowUp;
 	private ImageView mArrowDown;
 	private LayoutInflater mInflater;
@@ -46,26 +46,15 @@ public class QuickAction extends PopupWindows implements OnDismissListener {
 	
 	private int mChildPos;
     private int mInsertPos;
-    private int mAnimStyle;
-    private int mOrientation;
-    private int rootWidth=0;
+    private ORIENTATION mOrientation;
     
-    public static final int HORIZONTAL = 0;
-    public static final int VERTICAL = 1;
-    
-    public static final int ANIM_GROW_FROM_LEFT = 1;
-	public static final int ANIM_GROW_FROM_RIGHT = 2;
-	public static final int ANIM_GROW_FROM_CENTER = 3;
-	public static final int ANIM_REFLECT = 4;
-	public static final int ANIM_AUTO = 5;
-	
     /**
      * Constructor for default vertical layout
      * 
      * @param context  Context
      */
     public QuickAction(Context context) {
-        this(context, VERTICAL);
+        this(context, ORIENTATION.VERTICAL);
     }
 
     /**
@@ -74,20 +63,29 @@ public class QuickAction extends PopupWindows implements OnDismissListener {
      * @param context    Context
      * @param orientation Layout orientation, can be vartical or horizontal
      */
-    public QuickAction(Context context, int orientation) {
+    public QuickAction(Context context, ORIENTATION orientation) {
+        this(context,
+        	 orientation == ORIENTATION.HORIZONTAL 
+        	 	? R.layout.quick_action_popup_horizontal
+        	 		: R.layout.quick_action_popup_vertical,
+        	 orientation);
+    }
+
+    /**
+     * Constructor allowing orientation override
+     * 
+     * @param context    Context
+     * @param layoutId id of the layout resource
+     * @param orientation Layout orientation, can be vartical or horizontal
+     */
+    public QuickAction(Context context, int layoutId, ORIENTATION orientation ) {
         super(context);
         
         mOrientation = orientation;
         
         mInflater 	 = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        setRootViewId(layoutId);
 
-        if (mOrientation == HORIZONTAL) {
-            setRootViewId(R.layout.quick_action_popup_horizontal);
-        } else {
-            setRootViewId(R.layout.quick_action_popup_vertical);
-        }
-
-        mAnimStyle 	= ANIM_AUTO;
         mChildPos 	= 0;
     }
 
@@ -107,7 +105,7 @@ public class QuickAction extends PopupWindows implements OnDismissListener {
 	 * 
 	 * @param id Layout resource id
 	 */
-	public void setRootViewId(int id) {
+	private void setRootViewId(int id) {
 		mRootView	= (ViewGroup) mInflater.inflate(id, null);
 		mTrack 		= (ViewGroup) mRootView.findViewById(R.id.tracks);
 
@@ -122,15 +120,6 @@ public class QuickAction extends PopupWindows implements OnDismissListener {
 		mRootView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 		
 		setContentView(mRootView);
-	}
-	
-	/**
-	 * Set animation style
-	 * 
-	 * @param mAnimStyle animation style, default is set to ANIM_AUTO
-	 */
-	public void setAnimStyle(int mAnimStyle) {
-		this.mAnimStyle = mAnimStyle;
 	}
 	
 	/**
@@ -155,10 +144,10 @@ public class QuickAction extends PopupWindows implements OnDismissListener {
 		
 		View container;
 		
-		if (mOrientation == HORIZONTAL) {
-            container = mInflater.inflate(R.layout.quick_action_item_horizontal, null);
+		if (mOrientation == ORIENTATION.HORIZONTAL) {
+            container = mInflater.inflate(R.layout.quick_action_item_horizontal, (ViewGroup)null);
         } else {
-            container = mInflater.inflate(R.layout.quick_action_item_vertical, null);
+            container = mInflater.inflate(R.layout.quick_action_item_vertical, (ViewGroup)null);
         }
 		
 		ImageView img 	= (ImageView) container.findViewById(R.id.iv_icon);
@@ -197,7 +186,7 @@ public class QuickAction extends PopupWindows implements OnDismissListener {
 		container.setFocusable(true);
 		container.setClickable(true);
 			 
-		if (mOrientation == HORIZONTAL && mChildPos != 0) {
+		if (mOrientation == ORIENTATION.HORIZONTAL && mChildPos != 0) {
             View separator = mInflater.inflate(R.layout.quick_action_horiz_separator, null);
             
             RelativeLayout.LayoutParams params
@@ -238,14 +227,15 @@ public class QuickAction extends PopupWindows implements OnDismissListener {
 	}
 	
 	/**
-	 * Show quickaction popup. Popup is automatically positioned, on top or bottom of anchor view.
+	 * Pre show
+	 * 
+	 * @param rootWidth 
+	 * @param xPos
+	 * @param yPos 
 	 * 
 	 */
-	public void show (View anchor) {
-		preShow();
-		
-		int xPos, yPos, arrowPos;
-		
+	@Override
+	protected void preShow (View anchor, int rootWidth, int xPos, int yPos) {
 		mDidAction 			= false;
 		
 		int[] location 		= new int[2];
@@ -255,104 +245,36 @@ public class QuickAction extends PopupWindows implements OnDismissListener {
 		Rect anchorRect 	= new Rect(location[0], location[1], location[0] + anchor.getWidth(), location[1] 
 		                	+ anchor.getHeight());
 
-		//mRootView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-		
-		mRootView.measure(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-	
 		int rootHeight 		= mRootView.getMeasuredHeight();
 		
-		if (rootWidth == 0) {
-			rootWidth		= mRootView.getMeasuredWidth();
-		}
-		
-		int screenWidth 	= mWindowManager.getDefaultDisplay().getWidth();
-		int screenHeight	= mWindowManager.getDefaultDisplay().getHeight();
-		
-		//automatically get X coord of popup (top left)
-		if ((anchorRect.left + rootWidth) > screenWidth) {
-			xPos 		= anchorRect.left - (rootWidth-anchor.getWidth());			
-			xPos 		= (xPos < 0) ? 0 : xPos;
-			
-			arrowPos 	= anchorRect.centerX()-xPos;
-			
-		} else {
-			if (anchor.getWidth() > rootWidth) {
-				xPos = anchorRect.centerX() - (rootWidth/2);
-			} else {
-				xPos = anchorRect.left;
-			}
-			
-			arrowPos = anchorRect.centerX()-xPos;
-		}
+		int screenHeight = mWindowManager.getDefaultDisplay().getHeight();
+		int screenWidth = mWindowManager.getDefaultDisplay().getWidth();
 		
 		int dyTop			= anchorRect.top;
 		int dyBottom		= screenHeight - anchorRect.bottom;
 
 		boolean onTop		= (dyTop > dyBottom) ? true : false;
 
+		int arrowPos;
+		//automatically get X coord of popup (top left)
+		if ((anchorRect.left + rootWidth) > screenWidth) {
+			arrowPos 	= anchorRect.centerX()-xPos;
+			
+		} else {
+			arrowPos = anchorRect.centerX()-xPos;
+		}
 		if (onTop) {
 			if (rootHeight > dyTop) {
-				yPos 			= 15;
 				LayoutParams l 	= mScroller.getLayoutParams();
 				l.height		= dyTop - anchor.getHeight();
-			} else {
-				yPos = anchorRect.top - rootHeight;
 			}
 		} else {
-			yPos = anchorRect.bottom;
-			
 			if (rootHeight > dyBottom) { 
 				LayoutParams l 	= mScroller.getLayoutParams();
 				l.height		= dyBottom;
 			}
 		}
-		
 		showArrow(((onTop) ? R.id.arrow_down : R.id.arrow_up), arrowPos);
-		
-		setAnimationStyle(screenWidth, anchorRect.centerX(), onTop);
-		
-		mWindow.showAtLocation(anchor, Gravity.NO_GRAVITY, xPos, yPos);
-	}
-	
-	/**
-	 * Set animation style
-	 * 
-	 * @param screenWidth screen width
-	 * @param requestedX distance from left edge
-	 * @param onTop flag to indicate where the popup should be displayed. Set TRUE if displayed on top of anchor view
-	 * 		  and vice versa
-	 */
-	private void setAnimationStyle(int screenWidth, int requestedX, boolean onTop) {
-		int arrowPos = requestedX - mArrowUp.getMeasuredWidth()/2;
-
-		switch (mAnimStyle) {
-		case ANIM_GROW_FROM_LEFT:
-			mWindow.setAnimationStyle((onTop) ? R.style.Animations_PopUpMenu_Left : R.style.Animations_PopDownMenu_Left);
-			break;
-					
-		case ANIM_GROW_FROM_RIGHT:
-			mWindow.setAnimationStyle((onTop) ? R.style.Animations_PopUpMenu_Right : R.style.Animations_PopDownMenu_Right);
-			break;
-					
-		case ANIM_GROW_FROM_CENTER:
-			mWindow.setAnimationStyle((onTop) ? R.style.Animations_PopUpMenu_Center : R.style.Animations_PopDownMenu_Center);
-		break;
-			
-		case ANIM_REFLECT:
-			mWindow.setAnimationStyle((onTop) ? R.style.Animations_PopUpMenu_Reflect : R.style.Animations_PopDownMenu_Reflect);
-		break;
-		
-		case ANIM_AUTO:
-			if (arrowPos <= screenWidth/4) {
-				mWindow.setAnimationStyle((onTop) ? R.style.Animations_PopUpMenu_Left : R.style.Animations_PopDownMenu_Left);
-			} else if (arrowPos > screenWidth/4 && arrowPos < 3 * (screenWidth/4)) {
-				mWindow.setAnimationStyle((onTop) ? R.style.Animations_PopUpMenu_Center : R.style.Animations_PopDownMenu_Center);
-			} else {
-				mWindow.setAnimationStyle((onTop) ? R.style.Animations_PopUpMenu_Right : R.style.Animations_PopDownMenu_Right);
-			}
-					
-			break;
-		}
 	}
 	
 	/**

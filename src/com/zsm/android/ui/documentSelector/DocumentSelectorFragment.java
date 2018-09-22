@@ -1,31 +1,39 @@
 package com.zsm.android.ui.documentSelector;
 
+import com.zsm.R;
+import com.zsm.log.Log;
+import com.zsm.util.file.FileDataListMakerNotifier;
+import com.zsm.util.file.FileExtensionFilter;
+import com.zsm.util.file.android.DocumentData;
+import com.zsm.util.file.android.DocumentFileUtilities;
+
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.provider.DocumentFile;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Spinner;
-
-import com.zsm.R;
-import com.zsm.android.ui.documentSelector.DocumentListFragment.OnDocumentSelectedListener;
-import com.zsm.util.file.AsyncFileListMaker;
-import com.zsm.util.file.FileExtensionFilter;
-import com.zsm.util.file.android.DocumentData;
-import com.zsm.util.file.android.DocumentFileListMaker;
-import com.zsm.util.file.android.DocumentFileUtilities;
+import android.widget.TextView;
 
 public class DocumentSelectorFragment extends DialogFragment 
-				implements DocumentUserInterface, OnDocumentSelectedListener {
+				implements DocumentUserInterface, FileDataListMakerNotifier {
 
 	private static final String KEY_CURRENT_LOCATION = "CURRENT_LOCATION";
 	private static final String KEY_FILTERS = "FILTERS";
@@ -39,7 +47,7 @@ public class DocumentSelectorFragment extends DialogFragment
 	private static final Uri STORAGE_PRIMARY_URI = Uri.parse( STORAGE_PRIMARY_URI_STR );
 	
 	private View mView;
-	private DocumentListFragment mListFragment;
+	private ListView mDocumentList;
 	private Spinner mFilterSpinner;
 	private EditText mNameView;
 	
@@ -54,7 +62,8 @@ public class DocumentSelectorFragment extends DialogFragment
 	private boolean mShowFileName;
 	private boolean mCustomerFilter;
 	
-	private AsyncFileListMaker<DocumentData> mAsyncFileListMaker;
+	private PermissedListMaker mPermissedListMaker;
+	private TextView mMessageView;
 	
 	/**
 	 * Constructor with the full parameters list.
@@ -163,9 +172,6 @@ public class DocumentSelectorFragment extends DialogFragment
 		mShowFileName = showFileName;
 		
 		mCustomerFilter = customerFilter;
-		
-		mAsyncFileListMaker
-			= new AsyncFileListMaker<DocumentData>( new DocumentFileListMaker() );
 	}
 
 	private void initCurrentLocation(final Uri currentPath) {
@@ -239,17 +245,39 @@ public class DocumentSelectorFragment extends DialogFragment
 			mView
 				= inflater.inflate( R.layout.document_selector_dialog, container,
 									false );
-			mListFragment
-				= (DocumentListFragment)getFragmentManager()
-								.findFragmentById( R.id.fragmentList );
+			mDocumentList
+				= (ListView)mView.findViewById( R.id.listViewDocument );
 			
-			mListFragment.setDocumentListMaker(mAsyncFileListMaker);
-			mListFragment.setOnDocumentSelectedListener( this );
-			mListFragment.setOperation( mOperation );
+			mDocumentList.setOnItemClickListener( new OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view,
+										int position, long id) {
+					
+					onDocumentClick(
+						(DocumentListAdapter) parent.getAdapter(), view, position);
+				}
+			} );
+			
+			DocumentListAdapter adapter = new DocumentListAdapter(mActivity);
+			mDocumentList.setAdapter(adapter);
+			
+			mMessageView = (TextView)mView.findViewById( R.id.textViewMessage );
 			
 			prepareFilterSpinner(mView, mFileFilters);
 			
 			mNameView = (EditText)mView.findViewById( R.id.editTextName );
+			
+			// TODO: The followings do not work
+			if( mOperation != DocumentOperation.SAVE ) {
+				InputMethodManager inputManager
+					= (InputMethodManager)
+							getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+				
+				inputManager.hideSoftInputFromWindow(mNameView.getWindowToken(),
+													 InputMethodManager.HIDE_NOT_ALWAYS);
+				getActivity().getWindow()
+					.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+			}
 			
 			View selectBtn = mView.findViewById( R.id.buttonOk );
 			selectBtn.setOnClickListener(mSaveLoadClickListener);
@@ -260,8 +288,31 @@ public class DocumentSelectorFragment extends DialogFragment
 					dismiss();
 				}
 			} );
+			
+			mPermissedListMaker
+				= new PermissedListMaker( this, adapter, this, mOperation );
+			
+			getDialog().setTitle(mTitle);
 		}
 		return mView;
+	}
+
+	private void onDocumentClick(DocumentListAdapter adapter, View view, int position) {
+
+		DocumentData data = adapter.getItem(position);
+		if (data.getType() != DocumentData.TYPE.DOCUMENT) {
+			mPermissedListMaker
+				.checkPermissionAndMakeList(data.getUri(),
+						(FileExtensionFilter) mFilterSpinner.getSelectedItem(),
+						mIncludeSubDir);
+		}
+
+		mCurrentLocation = directoryFromUri( data.getUri() );
+		if( data.getType() == DocumentData.TYPE.DOCUMENT ) {
+			mNameView.setText( data.getName() );
+		} else {
+			mNameView.setText( "" );
+		}
 	}
 
 	/**
@@ -278,7 +329,7 @@ public class DocumentSelectorFragment extends DialogFragment
 		if (fileFilters == null || fileFilters.length == 0) {
 			fileFilters
 				= new FileExtensionFilter[] { 
-						new FileExtensionFilter("All files", mListFragment ) };
+						new FileExtensionFilter("All files", this ) };
 			mFilterSpinner.setEnabled(false);
 		}
 		ArrayAdapter<FileExtensionFilter> adapter
@@ -301,7 +352,7 @@ public class DocumentSelectorFragment extends DialogFragment
 				FileExtensionFilter filter
 					= (FileExtensionFilter) aAdapter.getItemAtPosition(position);
 				mSaveLoadClickListener.setFileExtensionFilter( filter );
-				mListFragment.checkPermissionAndMakeList(
+				mPermissedListMaker.checkPermissionAndMakeList(
 						mCurrentLocation.getUri(), filter, mIncludeSubDir);
 			}
 
@@ -324,13 +375,87 @@ public class DocumentSelectorFragment extends DialogFragment
 	}
 
 	@Override
-	public void onSelected(View view, DocumentData data) {
-		mCurrentLocation = directoryFromUri( data.getUri() );
-		if( data.getType() == DocumentData.TYPE.DOCUMENT ) {
-			mNameView.setText( data.getName() );
-		} else {
-			mNameView.setText( "" );
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.d( "DocumentListFragment Result: ", "requestCode", requestCode,
+			   "resultCode", resultCode );
+		switch( requestCode ) {
+			case PermissedListMaker.REQUEST_FOR_GRANT:
+				mPermissedListMaker
+					.doForGrant(resultCode, data,
+						(FileExtensionFilter)mFilterSpinner.getSelectedItem(),
+						mIncludeSubDir );
+				break;
 		}
+	}
+
+	@Override
+	public void show() {
+		mPermissedListMaker.setMakingListFlag();
+		setMessage( "" );
+	}
+
+	@Override
+	public void dismiss() {
+		mPermissedListMaker.clearMakingListFlag();
+		setMessage( "" );
+		super.dismiss();
+	}
+	
+	private CharSequence mMessage = "";
+	private Handler mHandler;
+	private Runnable mMessageShower;
+	
+	private void setMessage( final CharSequence charSequence ) {
+		mMessage = charSequence;
+		
+		if( mHandler == null ) {
+			mHandler = new Handler( Looper.getMainLooper() );
+		}
+		if( mMessageShower == null ) {
+			mMessageShower = new Runnable() {
+				@Override
+				public void run() {
+					mMessageView.setText(mMessage);
+					mMessageShower = null;
+					System.out.println( mMessage );
+				}
+			};
+			mHandler.post( mMessageShower );
+		}
+	}
+
+	private void setMessage( final int strId ) {
+		setMessage( mActivity.getText(strId) );
+	}
+	
+	@Override
+	public boolean notifyFile(String filename, boolean isFile) {
+		String message
+			= getActivity()
+				.getString( R.string.documenSelector_message_progress );
+		
+		setMessage( message + filename );
+		
+		return mPermissedListMaker.isMakingListFlagSet();
+	}
+
+	@Override
+	public void beforeToMakeOrder() {
+		setMessage( R.string.documenSelector_message_sorting );
+	}
+
+	@Override
+	public void cancelled() {
+		mPermissedListMaker.clearMakingListFlag();
+	}
+
+	@Override
+	public void finished() {
+		setMessage( "" );
+	}
+
+	@Override
+	public void forAcception(String filename, boolean accepted) {
 	}
 
 	public void showDialog() {

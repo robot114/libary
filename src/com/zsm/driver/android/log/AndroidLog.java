@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import com.zsm.log.DummyReader;
+import com.zsm.io.DummyReader;
 import com.zsm.log.Log;
 
 public class AndroidLog extends Log {

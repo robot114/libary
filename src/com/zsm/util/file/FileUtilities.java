@@ -76,6 +76,17 @@ public class FileUtilities {
 
 	}
 	
+	public static boolean doesFileExist(ContentResolver cr, Uri uri) {
+		try ( Cursor c = cr.query(uri, null, null, null, null) ) {
+			if( c == null || c.getCount() != 1 || !c.moveToFirst() ) {
+				return false;
+			}
+			
+			return true;
+		}
+
+	}
+	
 	public static void copyFile(String src, String target) throws IOException {
 		copyFile( new File(src), new File(target) );
 	}
