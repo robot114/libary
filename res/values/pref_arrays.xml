@@ -11,10 +11,12 @@
     <string-array name="prefLogChannelsEntries">
         <item >To Android System Log(Always open)</item>
         <item >To a File</item>
-    </string-array>
+        <item >To memory buffer</item>
+        </string-array>
     
     <string-array name="prefLogChannelsValues">
         <item >AndroidLog</item>
         <item >FileLog</item>
+        <item >BufferLog</item>
     </string-array>
 </resources>

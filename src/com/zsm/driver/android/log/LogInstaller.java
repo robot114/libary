@@ -2,6 +2,7 @@ package com.zsm.driver.android.log;
 
 import java.io.File;
 
+import com.zsm.log.BufferedLog;
 import com.zsm.log.FileLog;
 import com.zsm.log.Log;
 
@@ -15,6 +16,7 @@ public class LogInstaller {
 
     public static final String ANDROID_LOG = "AndroidLog";
 	public static final String FILE_LOG = "FileLog";
+	public static final String BUFFER_LOG = "BufferLog";
 	public static final String DEFAULT_LOG = ANDROID_LOG;
 	
 	/**
@@ -87,6 +89,33 @@ public class LogInstaller {
 						"file name", logFileName );
 			}
 		}
+	}
+
+	/**
+	 * Need to be invoked in the method onCreate() of the application.
+	 * This is optional. If the buffer log is not necessary, this should
+	 * not be invoked.
+	 * 
+	 * @param maxBufferNum Max item number in the buffer.
+	 */
+	static public void installBufferLog( int maxBufferNum ) {
+		if( LogPreferences.getInstance().isLogChannelOn(BUFFER_LOG) ) {
+			Log.install( BUFFER_LOG, new BufferedLog( maxBufferNum ) );
+			Log.setLevel(BUFFER_LOG, Log.LEVEL.DEBUG);
+		}
+	}
+
+	/**
+	 * Need to be invoked in the method onCreate() of the application.
+	 * This is optional. If the buffer log is not necessary, this should
+	 * not be invoked.
+	 * 
+	 */
+	static public void installBufferLog( ) {
+//		if( LogPreferences.getInstance().isLogChannelOn(BUFFER_LOG) ) {
+			Log.install( BUFFER_LOG, new BufferedLog( ) );
+			Log.setLevel(BUFFER_LOG, Log.LEVEL.DEBUG);
+//		}
 	}
 
 }

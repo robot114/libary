@@ -3,6 +3,7 @@ package com.zsm.android.ui.fileselector;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 import android.content.Context;
 import android.os.Handler;
@@ -89,6 +90,25 @@ public class FileListAdapter extends BaseAdapter implements SortableAdapter<File
 
 	private void addAndNotifyInner(FileData file) {
 		mFileDataArray.add(file);
+		super.notifyDataSetChanged();
+	}
+
+	@Override
+	public void addAll(final List<FileData> files) {
+		if( Looper.myLooper() == Looper.getMainLooper() ) {
+			addAllAndNotifyInner(files);
+		} else {
+			mHandler.post( new Runnable() {
+				@Override
+				public void run() {
+					addAllAndNotifyInner(files);
+				}
+			});
+		}
+	}
+
+	private void addAllAndNotifyInner(List<FileData> files) {
+		mFileDataArray.addAll(files);
 		super.notifyDataSetChanged();
 	}
 

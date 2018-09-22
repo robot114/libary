@@ -1,12 +1,14 @@
 package com.zsm.util.file.android;
 
+import static android.provider.DocumentsContract.Document.COLUMN_DOCUMENT_ID;
+import static android.provider.DocumentsContract.Document.COLUMN_MIME_TYPE;
+
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.zsm.log.Log;
 import com.zsm.util.file.FileDataListMakerNotifier;
-
 
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
@@ -16,7 +18,6 @@ import android.content.UriPermission;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.DocumentsContract;
-import static android.provider.DocumentsContract.Document.*;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.provider.DocumentFile;
@@ -62,7 +63,7 @@ public class DocumentFileUtilities {
 		
 		final Uri childrenUri
 					= DocumentsContract.buildChildDocumentsUriUsingTree( path, docId );
-		final ArrayList<DocumentFile> results = new ArrayList<DocumentFile>();
+		final List<DocumentFile> results = new LinkedList<DocumentFile>();
 
 		try (Cursor c = resolver.query(childrenUri, LISTFILE_QUERY_COLS,
 									   null, null, null)) {
@@ -77,7 +78,6 @@ public class DocumentFileUtilities {
 				}
 			}
 		}
-
 		return results.toArray(new DocumentFile[results.size()]);
 	}
 
@@ -85,7 +85,7 @@ public class DocumentFileUtilities {
 								   StringFilter filter,
 								   boolean includeSubDir,
 								   FileDataListMakerNotifier notifier,
-								   final ArrayList<DocumentFile> results,
+								   final List<DocumentFile> results,
 								   Cursor c, int idIndex, int typeIndex) {
 		
 		final String type = c.getString(typeIndex);

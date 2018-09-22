@@ -6,6 +6,8 @@ package com.zsm.log;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import com.zsm.io.DummyReader;
+
 /**
  * @author zsm
  *

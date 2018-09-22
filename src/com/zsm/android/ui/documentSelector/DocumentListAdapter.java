@@ -1,20 +1,20 @@
 package com.zsm.android.ui.documentSelector;
 
 
-import android.content.Context;
-import android.view.View;
-import android.view.ViewGroup;
-
 import com.zsm.android.ui.DataListAdapter;
 import com.zsm.util.file.android.DocumentData;
 
+import android.app.Activity;
+import android.view.View;
+import android.view.ViewGroup;
+
 public class DocumentListAdapter extends DataListAdapter<DocumentData> {
 
-	private Context mContext;
+	private Activity mActivity;
 
-	public DocumentListAdapter(Context context) {
+	public DocumentListAdapter(Activity activity) {
 		super();
-		this.mContext = context;
+		this.mActivity = activity;
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public class DocumentListAdapter extends DataListAdapter<DocumentData> {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		SimpleDocumentItemView view;
 		if( convertView == null ) {
-			view = new SimpleDocumentItemView(mContext);
+			view = new SimpleDocumentItemView(mActivity);
 		} else {
 			view = (SimpleDocumentItemView)convertView;
 		}

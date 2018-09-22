@@ -19,6 +19,8 @@ abstract public class Log {
     private LEVEL level = LEVEL.ERROR;
     
     static private LEVEL globalLevel = LEVEL.ERROR;
+
+	private static Set<Entry<String, Log>> mInstanceSet;
     
     /**
      * Do anything needed when the log instance is uninstalled.
@@ -66,6 +68,7 @@ abstract public class Log {
     		instances = new HashMap<String, Log>();
     	}
         instances.put(id, newInstance);
+		mInstanceSet = instances.entrySet();
     }
     
     /**
@@ -87,6 +90,7 @@ abstract public class Log {
      */
     public static void uninstall( String id ) throws IOException {
    		instances.remove(id).uninstall();
+		mInstanceSet = instances.entrySet();
     }
     
     /**
@@ -213,16 +217,15 @@ abstract public class Log {
     		return;
     	}
     	
-		Set<Entry<String, Log>> set = instances.entrySet();
 		StringBuffer buffer = null;
-		for( Entry<String, Log> e : set) {
+		for( Entry<String, Log> e : mInstanceSet) {
 			if( e.getValue().level.compareTo( level ) <= 0 ) {
 				if( buffer == null ) {
 					buffer = message( message, objects );
+					if( t != null && t.getMessage() != null ) {
+						buffer.append( t.getMessage() ).append( "\r\n" );
+					}
                 }
-				if( t != null && t.getMessage() != null ) {
-					buffer.append( t.getMessage() ).append( "\r\n" );
-				}
 		    	try {
 		    		e.getValue().print(t, buffer, level);
 		    	} catch ( Exception ex ) {
@@ -383,7 +386,7 @@ abstract public class Log {
         long hour = time % 60; 
         
         return "[" + Thread.currentThread().getName() + "] "
-        		+ hour  + ":" + min + ":" + sec + "," + milli;
+        		+ hour  + ":" + min + ":" + sec + "." + milli;
     }
     
     /**

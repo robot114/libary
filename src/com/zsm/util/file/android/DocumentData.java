@@ -26,7 +26,13 @@ public abstract class DocumentData {
 					return lhs.getType().ordinal() - rhs.getType().ordinal();
 				}
 				
-				return lhs.getName().compareToIgnoreCase( rhs.getName() );
+				String lhsName = lhs.getName();
+				if( lhsName == null ) {
+					lhsName = "";
+				}
+				String rhsName = rhs.getName();
+				rhsName = rhsName == null ? "" : rhsName;
+				return lhsName.compareToIgnoreCase( rhsName );
 			}
 		
 	};

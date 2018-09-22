@@ -1,5 +1,6 @@
 package com.zsm.android.ui;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,9 @@ import com.zsm.R;
 
 public abstract class CheckableExpandableListAdapter<T> extends BaseExpandableListAdapter {
 
+	private static final int DEFAULT_ITEM_LAYOUT_RES_ID = R.layout.checkable_expandable_group_item;
+	private static final int INVALID_RES_ID = -1;
+
 	public interface OnCheckedChangedListener<T> {
 		void onCheckedChanged( CheckBox view, T data, boolean checked );
 	}
@@ -28,41 +32,21 @@ public abstract class CheckableExpandableListAdapter<T> extends BaseExpandableLi
 		void onLongClick( View view, T data, boolean checked );
 	}
 	
-	final protected class CheckableData {
-		private T mData;
-		private boolean mChecked;
-		
-		private CheckableData( T data, boolean checked ) {
-			mData = data;
-			mChecked = checked;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if( obj == this ) {
-				return true;
-			}
-			
-			if( obj == null || !( obj.getClass().equals( CheckableData.class ) ) ) {
-				return false;
-			}
-			
-			@SuppressWarnings("unchecked")
-			CheckableData cd = (CheckableData)obj;
-			return cd.mData.equals(mData);
-		}
-	}
-	
 	private final static Object TAG_CHECKBOX = new Object();
 	private static final Object TAG_VIEW = new Object();
 	
-	private static final int TAG_ID_POSITION = R.id.TAG_ID_POSITION;
+	protected static final int TAG_ID_POSITION = R.id.TAG_ID_POSITION;
 
 	protected Context mContext;
 	private boolean mItemDuplicable;
 	
-	protected List<CheckableData> mDataList;
+	private CheckableList<T> mDataList;
+	
 	private boolean mShowCheckbox;
+	
+	// Item layout resource id. If it is not specified by the subclass, 
+	// DEFAULT_ITEM_LAYOUT_RES_ID will be used
+	final private int mItemLayoutResId;
 	
 	// These are the listeners defined by me
 	private OnCheckedChangedListener<T> mOnCheckboxChangedListener;
@@ -75,30 +59,52 @@ public abstract class CheckableExpandableListAdapter<T> extends BaseExpandableLi
 	protected CheckableExpandableListAdapter( Context context,
 											  boolean itemDuplicable ) {
 		
-		init( context, newDataList(), itemDuplicable );
+		mItemLayoutResId = INVALID_RES_ID;
+		mDataList = newDataList();
+		init( context, itemDuplicable );
+	}
+
+	/**
+	 * Constructor to specify the item layout res id
+	 * 
+	 * @param context
+	 * @param itemDuplicable
+	 * @param itemLayoutResId Item layout resource id
+	 */
+	protected CheckableExpandableListAdapter(Context context,
+											 boolean itemDuplicable,
+											 int itemLayoutResId) {
+
+		mDataList = newDataList();
+		init(context, itemDuplicable);
+		mItemLayoutResId = itemLayoutResId;
 	}
 
 	protected CheckableExpandableListAdapter( Context context,
-											  List<CheckableData> data,
+											  List<T> data,
 				 							  boolean itemDuplicable ) {
 	
-		init(context, data, itemDuplicable);
+		mItemLayoutResId = INVALID_RES_ID;
+		mDataList = newDataList( data );
+		init(context, itemDuplicable);
 	}
 
-	private void init(Context context, List<CheckableData> data,
-			boolean itemDuplicable) {
+	private void init(Context context, boolean itemDuplicable) {
 		mContext = context;
 		mItemDuplicable = itemDuplicable;
 		
 		mCheckBoxViewChangedListener = newOnCheckBoxChangListener();
 		mCheckBoxViewLongClickListener = newOnCheckBoxLongClickListener();
 		
-		mDataList = data;
 		mShowCheckbox = true;
 	}
 
-	protected List<CheckableData> newDataList() {
-		return new ArrayList<CheckableData>();
+	private CheckableList<T> newDataList() {
+		return new CheckableList<T>();
+	}
+	
+	private CheckableList<T> newDataList( List<T> list ) {
+		return new CheckableList<T>( list );
 	}
 	
 	private OnCheckedChangeListener newOnCheckBoxChangListener() {
@@ -127,7 +133,7 @@ public abstract class CheckableExpandableListAdapter<T> extends BaseExpandableLi
 				if( mOnCheckBoxLongClickListener != null ) {
 					int position = (int) v.getTag(TAG_ID_POSITION);
 					mOnCheckBoxLongClickListener
-						.onLongClick( v, getGroup(position), getChecked(position) );
+						.onLongClick( v, getGroup(position), isChecked(position) );
 					
 					return true;
 				}
@@ -137,6 +143,10 @@ public abstract class CheckableExpandableListAdapter<T> extends BaseExpandableLi
 		};
 	}
 
+	final public void setDataList( List<T> data ) {
+		mDataList = newDataList( data );
+	}
+	
 	public void setOnCheckboxChangeListener( OnCheckedChangedListener<T> l) {
 		this.mOnCheckboxChangedListener = l;
 	}
@@ -155,18 +165,25 @@ public abstract class CheckableExpandableListAdapter<T> extends BaseExpandableLi
 			String infService = Context.LAYOUT_INFLATER_SERVICE;
 			LayoutInflater li
 				= (LayoutInflater)mContext.getSystemService( infService );
-			convertView = li.inflate( R.layout.checkable_expandable_group_item, null);
+			if( mItemLayoutResId != INVALID_RES_ID ) {
+				convertView = li.inflate( mItemLayoutResId, null );
+			} else {
+				convertView = li.inflate( DEFAULT_ITEM_LAYOUT_RES_ID, null);
+			}
+			
 			ViewGroup layoutGroup = (ViewGroup)convertView;
-			checkboxView
-				= (CheckBox) convertView.findViewById( R.id.libCheckBox );
+			checkboxView = getCheckboxView( convertView );
 			checkboxView.setOnCheckedChangeListener( mCheckBoxViewChangedListener );
 			checkboxView.setOnLongClickListener(mCheckBoxViewLongClickListener);
 			checkboxView.setTag(TAG_CHECKBOX);
 			
-			view = getGroupContentView( );
+			view = getGroupContentView( convertView );
 			view.setTag(TAG_VIEW);
 			
-			layoutGroup.addView(view);
+			// Default item layout no content, should be added
+			if( mItemLayoutResId == INVALID_RES_ID ) {
+				layoutGroup.addView(view);
+			}
 		} else {
 			checkboxView = (CheckBox) convertView.findViewWithTag(TAG_CHECKBOX);
 			view = convertView.findViewWithTag(TAG_VIEW);
@@ -176,14 +193,14 @@ public abstract class CheckableExpandableListAdapter<T> extends BaseExpandableLi
 		checkboxView.setTag(TAG_ID_POSITION, groupPosition);
 		
 		updateGroupView( view, groupPosition );
-		boolean checked = getChecked(groupPosition);
+		boolean checked = isChecked(groupPosition);
 		checkboxView.setChecked( checked );
 		checkboxView.setVisibility( mShowCheckbox ? View.VISIBLE : View.INVISIBLE );
 		
 		return convertView;
 	}
-
-	public void setCheckAll( boolean checked ) {
+	
+	public synchronized void setCheckAll( boolean checked ) {
 		int groupCount = getGroupCount();
 		for( int i = 0; i < groupCount; i++ ) {
 			setChecked(i, checked);
@@ -195,7 +212,7 @@ public abstract class CheckableExpandableListAdapter<T> extends BaseExpandableLi
 		int groupCount = getGroupCount();
 		ArrayList<T> list = new ArrayList<T>( groupCount );
 		for( int i = 0; i < groupCount; i++ ) {
-			if( checked == getChecked(i) ) {
+			if( checked == isChecked(i) ) {
 				list.add( getGroup( i ) );
 			}
 		}
@@ -207,7 +224,7 @@ public abstract class CheckableExpandableListAdapter<T> extends BaseExpandableLi
 		int count = 0;
 		int groupCount = getGroupCount();
 		for( int i = 0; i < groupCount; i++ ) {
-			if( getChecked( i ) ) {
+			if( isChecked( i ) ) {
 				count++;
 			}
 		}
@@ -222,7 +239,7 @@ public abstract class CheckableExpandableListAdapter<T> extends BaseExpandableLi
 	
 	@Override
 	public T getGroup(int groupPosition) {
-		return mDataList.get(groupPosition).mData;
+		return mDataList.get(groupPosition);
 	}
 
 	@Override
@@ -230,42 +247,95 @@ public abstract class CheckableExpandableListAdapter<T> extends BaseExpandableLi
 		return mDataList.size();
 	}
 
-	public void add( T data, boolean checked ) {
+	public synchronized void add( T data, boolean checked ) {
 		if( !mItemDuplicable && mDataList.contains(data) ) {
 			return;
 		}
-		mDataList.add( new CheckableData( data, checked ) );
+		mDataList.add( data, checked );
 		notifyDataSetChanged();
 	}
 	
-	public void add( T data ) {
+	public synchronized void add( T data ) {
 		add( data, false );
 	}
 	
-	public T remove( T data ) {
-		boolean found = mDataList.remove(new CheckableData( data, false ) );
-		if( found ) {
+	public synchronized boolean remove( T data ) {
+		boolean has = mDataList.remove( data );
+		if( has ) {
 			notifyDataSetChanged();
-			return data;
 		}
 		
-		return null;
+		return has;
 	}
 	
-	public void setChecked(int groupPosition, boolean isChecked) {
-		CheckableData cd = mDataList.get(groupPosition);
-		if( cd.mChecked != isChecked ) {
-			cd.mChecked = isChecked;
+	public synchronized boolean removeChcekced( boolean isChecked ) {
+		int size = mDataList.size();
+		
+		boolean changed = false;
+		for( int i = 0; i < size; i++ ) {
+			if( mDataList.isChecked(i) == isChecked ) {
+				changed = true;
+				mDataList.remove(i);
+			}
+		}
+		
+		if( changed ) {
+			notifyDataSetChanged();
+		}
+		
+		return changed;
+	}
+	
+	public synchronized void setChecked(int groupPosition, boolean isChecked) {
+		boolean prevChecked = mDataList.setChecked(groupPosition, isChecked);
+		if( prevChecked != isChecked ) {
 			notifyDataSetChanged();
 		}
 	}
 
-	public boolean getChecked(int groupPosition) {
-		return mDataList.get(groupPosition).mChecked;
+	public synchronized boolean isChecked(int groupPosition) {
+		return mDataList.isChecked(groupPosition);
 	}
 
-	protected abstract View getGroupContentView();
+	protected CheckBox getCheckboxView( View convertView ) {
+		if( mItemLayoutResId != INVALID_RES_ID ) {
+			throw new InvalidParameterException(
+				"getCheckboxView MUST be overrided when item layout resource id is specified!" );
+		}
+		
+		return (CheckBox) convertView.findViewById( R.id.libCheckBox );
+	}
+	
+	public synchronized void checkAll( boolean isChecked ) {
+		boolean changed = false;
+		int size = mDataList.size();
+		for( int i = 0; i < size; i++ ) {
+			if( mDataList.isChecked(i) != isChecked ) {
+				changed = true;
+				mDataList.setChecked(i, isChecked);
+			}
+		}
+		
+		if( changed ) {
+			notifyDataSetChanged();
+		}
+	}
 
+	/**
+	 * Get the whole view, except the checkbox, of one item. This method will only be invoked
+	 * when the {@link convertView} is inflated or created
+	 *  
+	 * @param convertView the view that includes the checkbox and the content view
+	 * @return the content view
+	 */
+	protected abstract View getGroupContentView(View convertView);
+
+	/**
+	 * Update the content view, which includes the whole view, except the checkbox, of one item
+	 * 
+	 * @param view the content view to be updated
+	 * @param groupPosition the index of the data in the list 
+	 */
 	protected abstract void updateGroupView(View view, int groupPosition);
 
 }
